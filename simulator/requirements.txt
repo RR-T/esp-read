@@ -1,0 +1,2 @@
+Pillow>=10
+# tkinter ships with CPython on macOS/Windows. On Linux: `apt install python3-tk`.
