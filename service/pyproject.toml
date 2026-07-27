@@ -1,0 +1,10 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+filterwarnings = [
+    # XHTML parsed with the (lenient) HTML parser on purpose; and noisy
+    # deprecations from ebooklib/bs4 that we don't control.
+    "ignore::bs4.XMLParsedAsHTMLWarning",
+    "ignore::DeprecationWarning",
+    "ignore::FutureWarning",
+]

@@ -1,0 +1,11 @@
+services:
+  ereader-service:
+    build: .
+    container_name: ereader-service
+    ports:
+      - "8000:8000"          # reachable on the LAN at http://<pc-ip>:8000
+    volumes:
+      - ./library:/data/library   # incoming/ + converted/ persist across rebuilds
+    environment:
+      LIBRARY_ROOT: /data/library
+    restart: unless-stopped

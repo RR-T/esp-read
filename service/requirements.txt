@@ -1,0 +1,10 @@
+# Runtime dependencies for the conversion microservice.
+# Pinned for reproducible Docker builds; bump deliberately.
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+ebooklib==0.18
+lxml==6.1.1
+beautifulsoup4==4.12.3
+pillow==12.3.0          # not used in text mode; reserved for bitmap mode
+watchdog==6.0.0
+pydantic==2.13.4

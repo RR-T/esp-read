@@ -1,0 +1,12 @@
+# Never commit WiFi credentials.
+src/secrets.h
+.pio/
+
+# pioarduino/idf_component_manager build artifacts (the xiao_s3_tuned env
+# rebuilds the framework from source) — fetched dependency source and
+# generated config, not our code. Regenerated on every build.
+.dummy/
+managed_components/
+sdkconfig.defaults
+sdkconfig.*
+dependencies.lock

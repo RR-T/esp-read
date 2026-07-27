@@ -1,0 +1,12 @@
+# Book files, the ingested store, and sync data never go in git.
+library/incoming/*
+library/books/*
+library/sync/*
+!library/incoming/.gitkeep
+!library/books/.gitkeep
+!library/sync/.gitkeep
+
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
