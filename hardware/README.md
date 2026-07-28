@@ -1,4 +1,83 @@
-# ProtoMate-for-XIAO board layout
+# Board layout — plain protoboard (current) + ProtoMate (superseded)
+
+## Current build: `protoboard_build_sheet_generator.py` → `protoboard_build.pdf`
+
+**Plain double-sided 2.54 mm protoboard, cut to 26 × 17 holes (~66 × 43 mm), with
+an edge notch so the XIAO sits in-plane.** This is the build to solder from.
+
+```bash
+python3 protoboard_build_sheet_generator.py      # needs reportlab
+```
+
+Edit the data model (`SIDE_A`/`SIDE_B`, `BUSES`, `LEADS`, `WIRES`, `WAYPOINTS`,
+`PARTS`, `CASTELLATIONS`) and re-run — it revalidates and re-renders the 4 sheets:
+Front (component side), Back (14 wires), Wiring lists, Reference.
+
+**Coordinates:** cols A–Z left→right, rows 1–17 top→bottom, holes written
+hyphenated (`G-14`) so they can't be confused with net names like `D10`. The notch
+removes cols J–P, rows 10–17.
+
+**Three connection mechanisms**, since no hole is connected to any other:
+
+| Mechanism | Used for | Count |
+|---|---|---|
+| **Bus** — bare tinned copper threaded along a hole row, soldered at every hole | GND rail (row 2), 3V3 rail (row 3), shared SCK/MOSI fan-outs (rows 5/6) | 4 |
+| **Wire** — insulated 30 AWG Kynar, point to point | everything else | 14 |
+| **Part legs** — a component bridging two holes | 3 dividers + bulk cap | 4 |
+| **Stub legs** — 26 AWG into the XIAO's pads, bent 90°, into the landing pads | XIAO ↔ board | 14 |
+| **Flying wires** — to the XIAO Plus SMD castellations | VBAT, ADC_BAT, VBUS_S, MENU | 4 |
+
+Recreating the rails as buses is what keeps the insulated-wire count down to 14.
+Holes used: 65 of 386 usable (17%) — deliberately uncrowded.
+
+### Validator (warn-only, printed on every run)
+
+| Check | Catches |
+|---|---|
+| `offboard` | a hole off-grid or inside the notch |
+| `route` | a wire or bus crossing the notch void (rows 10–17 exist only in cols A–I / Q–Z) |
+| `crossnet` | one node carrying two nets — a short |
+| `reach` | a lead or part leg that doesn't connect to its net's source |
+| `short` | a multi-leg part with both legs on one node |
+| `crowd` | more conductors in a hole than it can take (limit 2, or 3 where `COLAND` says a junction is intended) |
+
+All six were fault-injection tested. `route` earned its place immediately: the
+first layout ran three wires (5V feed, SCK, MOSI) straight across the notch void,
+which is why `WAYPOINTS` now dresses them around above row 10.
+
+### Open before cutting
+
+- **XIAO pad sides/direction are UNVERIFIED** — which physical row is side A, and
+  whether side B runs the same top→bottom. Dry-fit, measure the row-to-row
+  spacing (expect 12.7 mm), check against the silk, then flip `FLIP_SIDE_A/B`.
+- **VBUS-sense pin still open** — ADC1 is GPIO1–10 only and ADC2 is dead while
+  WiFi is up, so a high-numbered castellation can't do analog. Prefer digital
+  presence sense, or `D2`/GPIO3 (hole `I-16`, the free ADC1 pin, with a
+  strapping-pin caveat).
+- **Board R10 value** — confirm before trusting it as the battery divider's lower leg.
+
+---
+
+# ProtoMate-for-XIAO board layout (historical)
+
+> ## ⚠️ SUPERSEDED (2026-07-28)
+>
+> The build moved to a **plain double-sided 2.54 mm through-hole prototyping
+> PCB, cut to size** — for lower Z and free placement. **Do not solder from
+> `protomate_build.pdf`:** every hole coordinate in it assumes ProtoMate
+> continuity (row strips `ABC`/`FGH`, split buses `Dlo/Dhi`/`Elo/Ehi`,
+> Column I = the XIAO pads). A plain protoboard has **zero continuity — every
+> hole is an isolated plated pad**, so the ~7-jumper plan becomes ~25+
+> point-to-point wires and the layout must be redone.
+>
+> Still valid and worth keeping from this document: the **pin-conflict
+> resolutions** (§conflicts — battery divider, VBUS-sense vs RST, menu button),
+> the **divider values**, and the **shared-SPI build rule**. The generator's
+> union-find net validator is also worth retargeting rather than discarding.
+>
+> Current build technique: `docs/bring-up-and-assembly.md` §Phase 5.
+> Note the flying-wire/castellation distinction below is now moot — nothing on a
+> plain protoboard is pre-routed, so all pins are equally reachable.
 
 Perfboard layout + build sheet for the DIY e-reader, mounting a **Seeed XIAO
 ESP32-S3 Plus** on a [ProtoMate for XIAO](https://thepihut.com/products/protomate-for-xiao).
