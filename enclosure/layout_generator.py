@@ -37,26 +37,36 @@ PARTS = {
 NOTCH_W, NOTCH_D = 18.0, 21.5      # 7 x 8.5 holes, cut in from the board edge
 WALL_FRONT, WALL_BACK, AIR_GAP = 1.5, 1.5, 1.0
 
+# Logic board + XIAO at the TOP, HAT at the BOTTOM (2026-07-28 FPC-exit fix —
+# the FPC exits the panel's bottom edge, so the HAT lives there; USB-C must
+# then exit through the case's TOP edge, so the notch cuts into the logic
+# board's TOP edge, not the bottom). Single flag drives every rendering spot
+# that depends on which edge the notch/USB-C is on, so they can't drift out
+# of sync with each other the way three independent hardcoded calcs did.
+NOTCH_AT_TOP = True
+
 # portrait plan placement (x,y of top-left, mm, origin = glass top-left)
 PLACE = {}
 
 
 def _layout():
-    """Stack HAT / battery / logic board down the portrait glass, centred."""
+    """Stack logic board / battery / HAT down the portrait glass, centred."""
     hat_w, hat_h, *_ = PARTS['hat']
     bat_w, bat_h, *_ = PARTS['battery']
     log_w, log_h, *_ = PARTS['logic']
     margin_top = 6.0
     gap = (GLASS_H - margin_top - hat_h - bat_h - log_h - 6.0) / 2.0
     y = margin_top
-    PLACE['hat'] = ((GLASS_W - hat_w) / 2, y)
-    y += hat_h + gap
+    PLACE['logic'] = ((GLASS_W - log_w) / 2, y)
+    y += log_h + gap
     PLACE['battery'] = ((GLASS_W - bat_w) / 2, y)
     y += bat_h + gap
-    PLACE['logic'] = ((GLASS_W - log_w) / 2, y)
-    # XIAO sits in a notch cut into the logic board's bottom edge, centred
+    PLACE['hat'] = ((GLASS_W - hat_w) / 2, y)
+    # XIAO sits in a notch cut into the logic board's TOP edge (NOTCH_AT_TOP),
+    # centred, so USB-C faces outward through the case's top wall.
     lx, ly = PLACE['logic']
-    PLACE['xiao'] = (lx + (log_w - PARTS['xiao'][0]) / 2, ly + log_h - PARTS['xiao'][1])
+    xiao_y = ly if NOTCH_AT_TOP else ly + log_h - PARTS['xiao'][1]
+    PLACE['xiao'] = (lx + (log_w - PARTS['xiao'][0]) / 2, xiao_y)
     return gap
 
 
@@ -107,9 +117,15 @@ class Svg:
         print(f'wrote {out_png.name}  ({self.w}x{self.h})')
 
 
-def notch_path(x, y, w, h, nw, nd):
-    """Logic-board outline with a U notch cut into the bottom edge (px, centred)."""
+def notch_path(x, y, w, h, nw, nd, at_top=False):
+    """Logic-board outline with a U notch cut into the bottom (default) or top
+    edge (px, centred). at_top=True for the real assembly: the logic board
+    sits at the case's TOP now (2026-07-28, FPC-exit fix), so USB-C must exit
+    through the board's TOP edge, not the bottom."""
     nx = x + (w - nw) / 2
+    if at_top:
+        return (f'M{x:.1f},{y+h:.1f} H{x+w:.1f} V{y:.1f} H{nx+nw:.1f} '
+                f'V{y+nd:.1f} H{nx:.1f} V{y:.1f} H{x:.1f} Z')
     return (f'M{x:.1f},{y:.1f} H{x+w:.1f} V{y+h:.1f} H{nx+nw:.1f} '
             f'V{y+h-nd:.1f} H{nx:.1f} V{y+h:.1f} H{x:.1f} Z')
 
@@ -207,15 +223,19 @@ def draw_plan(s, ox, oy, buttons=True, labels=True):
         px, py = PLACE[key]
         x, y = ox + px * SCALE, oy + py * SCALE
         if key == 'logic':
-            s.path(notch_path(x, y, w * SCALE, h * SCALE, NOTCH_W * SCALE, NOTCH_D * SCALE),
+            s.path(notch_path(x, y, w * SCALE, h * SCALE, NOTCH_W * SCALE, NOTCH_D * SCALE,
+                               at_top=NOTCH_AT_TOP),
                    stroke=stroke, fill=fill, sw=1.6)
         else:
             s.rect(x, y, w * SCALE, h * SCALE, stroke=stroke, fill=fill, sw=1.6)
         if labels:
             name = {'hat': 'Driver HAT', 'battery': 'Battery', 'logic': 'Logic board'}[key]
             cx, cy = x + w * SCALE / 2, y + h * SCALE / 2
-            # logic board: label in the free strip above the notch
-            dy = -(NOTCH_D * SCALE) / 2 - 4 if key == 'logic' else 0
+            # logic board: label in the free strip clear of the notch
+            if key == 'logic':
+                dy = (NOTCH_D * SCALE) / 2 + 4 if NOTCH_AT_TOP else -(NOTCH_D * SCALE) / 2 - 4
+            else:
+                dy = 0
             s.text(cx, cy + dy, name, size=13, fill=stroke, anchor='middle', weight='bold')
             dim = {'hat': '65 x 30.5', 'battery': '35 x 30 x 5',
                    'logic': '66 x 43  (26 x 17 holes)'}[key]
@@ -225,7 +245,7 @@ def draw_plan(s, ox, oy, buttons=True, labels=True):
     lw, lh, _, lstroke, _ = PARTS['logic']
     lx, ly = PLACE['logic']
     nx = ox + (lx + (lw - NOTCH_W) / 2) * SCALE
-    ny = oy + (ly + lh - NOTCH_D) * SCALE
+    ny = oy + (ly * SCALE if NOTCH_AT_TOP else (ly + lh - NOTCH_D) * SCALE)
     s.rect(nx, ny, NOTCH_W * SCALE, NOTCH_D * SCALE, stroke=lstroke, fill='none',
            sw=1.0, dash='4,3')
 
@@ -243,16 +263,23 @@ def draw_plan(s, ox, oy, buttons=True, labels=True):
         s.text(nx + NOTCH_W * SCALE + 8, ny + 24, '(7 x 8.5 holes,', size=9, fill=lstroke)
         s.text(nx + NOTCH_W * SCALE + 8, ny + 36, 'open to the edge)', size=9, fill=lstroke)
 
-    # USB-C out the bottom
+    # USB-C out the top (2026-07-28: was the bottom, before the FPC-exit fix)
     ux = x + w * SCALE / 2
-    s.rect(ux - 27, oy + gh - 5, 54, 13, stroke='#444', fill='#666', sw=1.0)
-    s.text(ux + 36, oy + gh + 18, 'USB-C', size=9.5, fill='#444')
+    uy = oy - 8 if NOTCH_AT_TOP else oy + gh - 5
+    s.rect(ux - 27, uy, 54, 13, stroke='#444', fill='#666', sw=1.0)
+    s.text(ux + 36, (uy - 5) if NOTCH_AT_TOP else (uy + 18), 'USB-C', size=9.5, fill='#444')
 
-    # FPC to HAT
+    # FPC to HAT — the FPC exits the panel's BOTTOM edge (confirmed 2026-07-28),
+    # feeding the HAT which now sits at the bottom of the stack.
+    hat_w, hat_h, *_ = PARTS['hat']
     hx, hy = PLACE['hat']
-    s.line(ox + gw / 2, oy - 12, ox + gw / 2, oy + hy * SCALE, stroke='#d98a00',
+    fpc_y1 = oy + gh + 12 if NOTCH_AT_TOP else oy - 12
+    fpc_y2 = oy + (hy + hat_h) * SCALE if NOTCH_AT_TOP else oy + hy * SCALE
+    s.line(ox + gw / 2, fpc_y1, ox + gw / 2, fpc_y2, stroke='#d98a00',
            sw=1.2, dash='4,3')
-    s.text(ox + gw / 2 + 6, oy - 4, 'FPC -> HAT (edge TBC)', size=9, fill='#d98a00')
+    fpc_label_y = (fpc_y1 + 14) if NOTCH_AT_TOP else (oy - 4)
+    s.text(ox + gw / 2 + 6, fpc_label_y, 'FPC -> HAT (bottom edge, confirmed)', size=9,
+           fill='#d98a00')
 
     if buttons:
         bx = ox + gw
@@ -341,8 +368,8 @@ def fig_option_b():
     s = Svg(W, H)
     s.text(30, 38, 'Option B layout — plan + longitudinal section (portrait, to scale)',
            size=19, weight='bold')
-    s.text(30, 57, 'battery centred for balance · XIAO in an edge notch, USB-C out the bottom · '
-                   'wedge back: thick lower two-thirds, thin top', size=10, fill='#555')
+    s.text(30, 57, 'battery centred for balance · XIAO in an edge notch, USB-C out the top · '
+                   'wedge back: thick upper two-thirds, thin bottom', size=10, fill='#555')
 
     ox, oy = 55, 95
     s.text(ox, oy - 8, 'plan', size=11, weight='bold')
@@ -363,13 +390,19 @@ def fig_option_b():
     inner = sx + (WALL_FRONT + GLASS_T + AIR_GAP) * dz
 
     thin, thick = 5.0, 9.8
-    # wedge back profile: thin at the top edge, thick across the lower two thirds
-    y_taper0 = top + gh * 0.22
-    y_taper1 = top + gh * 0.40
+    # Wedge back profile: thick across the UPPER two-thirds (logic board + XIAO,
+    # then the battery), tapering to thin at the BOTTOM edge (the HAT).
+    # REVERSED 2026-07-28: this used to taper thin-at-top/thick-at-bottom, which
+    # matched the pre-FPC-fix arrangement (HAT at top, thin; XIAO+battery at
+    # bottom, thick). The FPC-exit fix moved XIAO+logic to the TOP (needs the
+    # full ~9.8 mm, same as the battery) and the HAT to the BOTTOM (only needs
+    # the thin ~5 mm) — so the taper direction had to flip to stay consistent.
+    y_taper0 = top + gh * 0.60   # was 0.22 (mirrored: 1 - 0.40)
+    y_taper1 = top + gh * 0.78   # was 0.40 (mirrored: 1 - 0.22)
     back_thin = sx + thin * dz
     back_thick = sx + thick * dz
-    s.path(f'M{sx:.1f},{top:.1f} H{back_thin:.1f} V{y_taper0:.1f} '
-           f'L{back_thick:.1f},{y_taper1:.1f} V{top+gh:.1f} H{sx:.1f} Z',
+    s.path(f'M{sx:.1f},{top:.1f} H{back_thick:.1f} V{y_taper0:.1f} '
+           f'L{back_thin:.1f},{y_taper1:.1f} V{top+gh:.1f} H{sx:.1f} Z',
            stroke='#111', fill='none', sw=2.2)
 
     for key, lbl in (('hat', 'HAT 1.6'), ('battery', 'battery 5.0'), ('xiao', 'XIAO 4.7')):
@@ -386,10 +419,10 @@ def fig_option_b():
            stroke=stroke, fill=fill, sw=1.5)
     s.text(sx + thick * dz + 40, top + py * SCALE + 10, 'logic board 1.2', size=10, fill=stroke)
 
-    s.line(back_thin + 6, top + 4, back_thin + 26, top + 4, stroke='#111', sw=1.0)
-    s.text(back_thin + 30, top + 8, f'~{thin:.0f} (thin top)', size=9.5)
-    s.line(back_thick + 6, top + gh - 8, back_thick + 26, top + gh - 8, stroke='#111', sw=1.0)
-    s.text(back_thick + 30, top + gh - 4, f'~{thick:.1f} (grip)', size=9.5)
+    s.line(back_thick + 6, top + 4, back_thick + 26, top + 4, stroke='#111', sw=1.0)
+    s.text(back_thick + 30, top + 8, f'~{thick:.1f} (logic+XIAO / battery)', size=9.5)
+    s.line(back_thin + 6, top + gh - 8, back_thin + 26, top + gh - 8, stroke='#111', sw=1.0)
+    s.text(back_thin + 30, top + gh - 4, f'~{thin:.0f} (thin bottom, HAT)', size=9.5)
 
     fy = oy + gh + 56
     for i, ln in enumerate((
@@ -397,8 +430,9 @@ def fig_option_b():
             'in portrait (no Z-stacking) · buttons on a side edge.',
             'The enclosure floor carries a boss/shelf under the notch so the XIAO rests on the '
             'case — its 14 wires are electrical, not structural.',
-            'Depth is now set by the 5.0 mm battery, not the electronics: thin top ~5 mm over '
-            'the HAT, ~9.8 mm across the battery/XIAO grip zone.')):
+            'Depth is set by the 5.0 mm battery, not the electronics: ~9.8 mm across the top '
+            'two-thirds (logic board/XIAO, then battery), tapering to thin ~5 mm at the bottom '
+            'over the HAT.')):
         s.text(30, fy + i * 15, ln, size=9.5, fill='#555')
     s.save('option-b-layout')
 
@@ -409,8 +443,9 @@ def fig_curved_back():
     s = Svg(W, H)
     s.text(30, 38, 'Curved-back concept — cross-section through the centre (A-A)',
            size=19, weight='bold')
-    s.text(30, 57, 'thick centre houses the battery / XIAO stack · edges taper to the thin '
-                   'HAT/FPC end · exterior curved, interior flat bosses', size=10, fill='#555')
+    s.text(30, 57, 'CONCEPT PREDATES THE 2026-07-28 FPC-exit fix — XIAO no longer stacks with '
+                   'the battery (see option-b-layout.png for the current, decided arrangement); '
+                   'not reworked since this form was not chosen', size=9, fill='#a33')
 
     # cross-section: length across, depth down, depth exaggerated
     ox, oy = 95, 250
@@ -469,7 +504,7 @@ def fig_curved_back():
     s.line(px - 26, cy, px + GLASS_W * k + 26, cy, stroke='#a33', sw=1.3, dash='6,4')
     s.text(px - 30, cy + 4, 'A', size=10, fill='#a33', weight='bold', anchor='end')
     s.text(px + GLASS_W * k + 34, cy + 4, 'A', size=10, fill='#a33', weight='bold')
-    s.text(px, py + GLASS_H * k + 20, 'USB-C exits the bottom edge via the notch —', size=9,
+    s.text(px, py + GLASS_H * k + 20, 'USB-C exits the top edge via the notch —', size=9,
            fill='#d98a00')
     s.text(px, py + GLASS_H * k + 33, 'no USB-C extension needed.', size=9, fill='#d98a00')
 

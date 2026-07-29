@@ -10,25 +10,54 @@ python3 protoboard_build_sheet_generator.py      # needs reportlab
 ```
 
 Edit the data model (`SIDE_A`/`SIDE_B`, `BUSES`, `LEADS`, `WIRES`, `WAYPOINTS`,
-`PARTS`, `CASTELLATIONS`) and re-run — it revalidates and re-renders the 4 sheets:
-Front (component side), Back (14 wires), Wiring lists, Reference.
+`PARTS`, `OFFBOARD_PARTS`, `XIAO_DIRECT`) and re-run — it revalidates and
+re-renders the 4 sheets: Front (component side), Back (5 wires), Wiring lists,
+Reference.
 
 **Coordinates:** cols A–Z left→right, rows 1–17 top→bottom, holes written
 hyphenated (`G-14`) so they can't be confused with net names like `D10`. The notch
 removes cols J–P, rows 10–17.
 
-**Three connection mechanisms**, since no hole is connected to any other:
+### Board population philosophy (DECIDED 2026-07-28)
+
+This is a compact build, so the protoboard only hosts **genuinely shared
+nets** — a signal with exactly one consumer gets a wire soldered **directly to
+the XIAO's own pad**, never touching a board hole at all.
+
+| On the board (shared) | Off the board (single-consumer) |
+|---|---|
+| GND rail, 3V3 rail | E-paper CS/DC/RST/BUSY |
+| SCK/MOSI fan-out (display + SD) | SD MISO/CS |
+| C-BULK (bridges the 2 rails) | All 3 button signal legs, MENU castellation |
+| — | R-BAT (battery divider) — **fully off-board**, both legs single-consumer |
+| GND leg only, of the VBUS-sense divider | R-VBUS-T/B — off-board except that one GND leg |
+
+Consequence: only **4 of the 14 header pins** (GND, 3V3, D8, D10) get a real
+stub leg into the board. The other 10 stay in `PAD_HOLE` as **reference
+positions only** — useful for locating the pin, but no board hole, no stub
+leg; their wire departs straight from the XIAO pad. See `XIAO_DIRECT` (single
+signals) and `OFFBOARD_PARTS` (the two dividers, built inline near the XIAO)
+in the generator, and Sheet 3 "Direct-to-XIAO leads" / "Off-board parts" in
+the PDF.
+
+**Four connection mechanisms**, since no hole is connected to any other:
 
 | Mechanism | Used for | Count |
 |---|---|---|
 | **Bus** — bare tinned copper threaded along a hole row, soldered at every hole | GND rail (row 2), 3V3 rail (row 3), shared SCK/MOSI fan-outs (rows 5/6) | 4 |
-| **Wire** — insulated 30 AWG Kynar, point to point | everything else | 14 |
-| **Part legs** — a component bridging two holes | 3 dividers + bulk cap | 4 |
-| **Stub legs** — 26 AWG into the XIAO's pads, bent 90°, into the landing pads | XIAO ↔ board | 14 |
-| **Flying wires** — to the XIAO Plus SMD castellations | VBAT, ADC_BAT, VBUS_S, MENU | 4 |
+| **Wire** — insulated 30 AWG Kynar, point to point, board hole to board hole | GND/3V3 rail feeds, SCK/MOSI fan-out feeds, the VBUS-sense GND tap | 5 |
+| **Part legs (on-board)** — a component bridging two board holes | C-BULK only | 1 |
+| **Stub legs** — 26 AWG into the XIAO's pads, bent 90°, into a board landing pad | GND/3V3/D8/D10 only | 4 (of 14 header pins) |
+| **Direct-to-XIAO leads** — solder straight to the XIAO pin/pad, no board hole | everything single-consumer | 13 |
 
-Recreating the rails as buses is what keeps the insulated-wire count down to 14.
-Holes used: 65 of 386 usable (17%) — deliberately uncrowded.
+Holes used: 60 of 386 usable (16%) — deliberately uncrowded, and now smaller
+still since most of the board's old job moved off-board.
+
+> **VBAT (BAT+) is on the XIAO's UNDERSIDE**, not an edge castellation — solder
+> and route that flying wire clear **before** the module is seated in the
+> notch. Unlike an edge pad (ADC_BAT, MENU — hard to reach afterward) it is
+> **completely inaccessible** afterward. All three are direct-to-XIAO now —
+> none lands on a board hole.
 
 ### Validator (warn-only, printed on every run)
 
@@ -47,13 +76,16 @@ which is why `WAYPOINTS` now dresses them around above row 10.
 
 ### Open before cutting
 
-- **XIAO pad sides/direction are UNVERIFIED** — which physical row is side A, and
-  whether side B runs the same top→bottom. Dry-fit, measure the row-to-row
-  spacing (expect 12.7 mm), check against the silk, then flip `FLIP_SIDE_A/B`.
-- **VBUS-sense pin still open** — ADC1 is GPIO1–10 only and ADC2 is dead while
-  WiFi is up, so a high-numbered castellation can't do analog. Prefer digital
-  presence sense, or `D2`/GPIO3 (hole `I-16`, the free ADC1 pin, with a
-  strapping-pin caveat).
+- **XIAO pad sides/direction: CONTENT confirmed, physical orientation open.**
+  `SIDE_A`/`SIDE_B` grouping and order are confirmed (2026-07-28) against
+  Seeed's official XIAO ESP32S3-Plus pinout diagram — D0–D6 on one side,
+  5V/GND/3V3+D10–D7 on the other, in silked top→bottom order. Still to dry-fit:
+  which physical cut edge is "A" vs "B". Measure the row-to-row spacing (expect
+  12.7 mm), check against the silk, then flip `FLIP_SIDE_A/B` if mirrored.
+- **VBUS-sense / E-paper RST conflict: RESOLVED.** VBUS-sense now taps
+  `D2`/GPIO3 (hole `I-13`) instead of sharing `D3`/GPIO4 with the panel RST.
+  D2 is ADC1 (GPIO1–10 only — ADC2 is dead once WiFi is up) but is also a
+  strapping pin — verify boot behaviour is unaffected during bring-up.
 - **Board R10 value** — confirm before trusting it as the battery divider's lower leg.
 
 ---

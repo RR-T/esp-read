@@ -3,6 +3,16 @@
 **Status:** active work plan, 2026-07-28. Supersedes the generic checklist in
 `ereader-build-guide.md` §2 (written pre-benchmark, pre-CrossPoint decision).
 
+> **KNOWN STALE (2026-07-29) — not yet fully synced with this session's fixes:**
+> Phase 0's "which FPC edge / resolve VBUS-sense" items below are now **answered**
+> (FPC confirmed bottom-exit, layout swapped; VBUS-sense resolved to D2/GPIO3 —
+> both in `CLAUDE.md`), and the board-population philosophy changed a lot (most
+> signals now solder direct-to-XIAO, not through the board — see
+> `hardware/protoboard_build_sheet_generator.py` and `hardware/README.md` for the
+> current model). The hole-budget table below is fixed; the Phase 0 checklist and
+> later wiring-step prose are not — treat `CLAUDE.md` and the generator as the
+> source of truth where they conflict with this doc until a fuller sync pass.
+
 What's already settled and must not be re-litigated here: the pin map
 (`CLAUDE.md` §pin assignment) and the pin-conflict resolutions
 (`hardware/README.md` §conflicts — the ProtoMate *layout* is superseded, Phase 5),
@@ -266,29 +276,33 @@ gain over the ProtoMate.
 
 ### Board size — cut 26 × 17 holes ≈ 66 × 43 mm
 
-Derived from the hole budget, not guessed. Every soldered connection in the
-design:
+Derived from the hole budget, not guessed. **This table is a snapshot (2026-07-29)
+of `protoboard_build_sheet_generator.py`'s own printed summary — don't hand-update
+it when the generator changes; just re-run the script and copy its "Holes used"
+line.** It predates two later decisions that shrank the real number a lot: (1)
+the board-population philosophy (only genuinely SHARED nets touch the board —
+E-paper CS/DC/RST/BUSY, SD MISO/CS, button signals, MENU, and both dividers all
+solder **direct to the XIAO** now, no board hole at all) and (2) settling button
+debounce in **firmware**, not hardware (no RC caps on the board).
 
-| Item | Holes | Note |
+| Item | Count | Note |
 |---|---:|---|
-| XIAO header pads | 14 | landing ring around the notch |
-| Castellation flying wires | 4 | VBAT, ADC_BAT, VBUS_S, MENU |
-| Panel HAT leads | 9 | PWR, VCC, GND, DIN, SCLK, CS, DC, RST, BUSY |
-| Storage module | 6 | VCC, GND, MISO, MOSI, SCK, CS |
-| Buttons, 3 × (signal + GND) | 6 | GND legs can share the rail instead |
-| Battery divider `R-BAT` | 2 | upper 220 kΩ; board R10 is the lower leg |
-| VBUS divider, 2 × R | 4 | |
-| 3V3 bulk cap near panel VCC | 2 | **add this** — the e-paper boost rails draw current spikes |
-| Button RC debounce caps (optional) | 6 | 3 × 100 nF, or debounce in firmware |
-| GND rail | ~16 | bare-wire bus along one row |
-| 3V3 rail | ~16 | bare-wire bus along one row |
-| SCK + MOSI fan-outs | 6 | shared bus, panel + storage |
-| **Subtotal** | **~91** | |
-| **With ×1.5 routing slack** | **~140** | |
+| XIAO header pins with a REAL stub leg into the board | 4 | GND, 3V3, D8/SCK, D10/MOSI only — the shared nets |
+| XIAO header pins, reference position (no board hole) | 10 | D0,D1,D2,D3,D4,D5,D6,D7,D9 + the 5V pad — wire direct to their destination |
+| Castellation/underside flying wires that touch a board hole | 0 | VBAT, ADC_BAT, MENU are all direct-to-XIAO now |
+| Module leads landing on the board (shared-bus consumers only) | 12 | DISP: SCK/MOSI/VCC/PWR/GND (5); SD: SCK/MOSI/VCC/GND (4); 3× button GND legs (3) |
+| Direct-to-XIAO leads (no board hole at all) | 13 | DISP CS/DC/RST/BUSY, SD MISO/CS, 3× button signals, MENU, 5V + D2 (VBUS-sense), VBAT + ADC_BAT (battery divider) |
+| On-board parts | 1 | `C-BULK` only (bridges the GND/3V3 rails directly) |
+| Off-board parts (built inline near the XIAO, not on this board) | 3 | `R-BAT` (fully off-board), `R-VBUS-T`/`R-VBUS-B` (off-board except one GND tap) |
+| Board wires (board hole to board hole) | 5 | GND/3V3 rail feeds, SCK/MOSI fan-out feeds, the VBUS-sense divider's one GND tap |
+| Buses (GND rail, 3V3 rail, SCK + MOSI fan-outs) | 4 | bare-wire, soldered at every hole they pass |
+| **Holes actually used** | **60 (16%)** | of 386 usable — see the generator's own "Holes used" summary line |
 
-**26 × 17 holes = 442 pads**, minus ~63 lost to the notch ≈ **379 usable** —
-roughly 2.7× the requirement. That is deliberate: on an isolated-pad board,
-crowding is what causes accidental bridges, and spare pads are free.
+**26 × 17 holes = 442 pads**, minus 56 lost to the notch = **386 usable** —
+over 6× the current requirement. That headroom is deliberate: on an
+isolated-pad board, crowding is what causes accidental bridges, and spare pads
+are free. (It's also simply more than needed now that most signals bypass the
+board entirely — the board was originally sized for a much busier population.)
 
 **Why not smaller?** The old `CLAUDE.md` layout allotted the logic board
 ~67 × 29 mm, but check the portrait envelope: HAT 30.5 + battery 30 + logic 43
