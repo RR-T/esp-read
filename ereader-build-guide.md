@@ -258,10 +258,10 @@ Confirmed against the official board pinout. All D0–D10 pads are **ADC1** (ADC
 | E-paper BUSY (input) | D6 | GPIO43 | Input only; fine on TX pad |
 | SD CS | D7 | GPIO44 | Output; fine on RX pad |
 | Battery divider (ADC) | (pin 20) | GPIO10 | `ADC_BAT`, ADC1_CH9 (WiFi-safe). Board's R10 220kΩ = divider lower leg; add upper 220kΩ from VBAT |
-| VBUS sense (charging detect) | D3 | GPIO4 | ADC1, divided-down from VBUS (5V → scale into 3.3V range). Detects USB-present = charging |
+| VBUS sense (charging detect) | D19 | GPIO11 | Digital input, divided-down from VBUS (5V → scale into 3.3V range). Detects USB-present = charging. Moved off GPIO4 (E-paper RST) |
 | Button: page fwd / wake | D4 | GPIO5 | RTC-capable wake source |
 | Button: page back | D5 | GPIO6 | RTC-capable |
-| Button: menu / select | D11 | GPIO42 | RTC-capable castellation |
+| Button: menu / select | D17 | GPIO13 | RTC-capable castellation (moved off GPIO42, which can't wake the chip; see CLAUDE.md) |
 | (unused) | D2 | GPIO3 | Strapping pin — left free |
 
 **Spares for later:** D2/GPIO3 (input-only if used), more castellation pads (GPIO33–40, 45–48), GPIO21 (User_LED), and the I²C pads D4/D5 if I²C is ever added (would displace the battery divider / button — re-plan then).

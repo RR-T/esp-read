@@ -21,7 +21,37 @@ wherever the two differ. All values are in mm.
 | U.FL antenna | cable leaves the **bottom** of the board, **75 long** (can be curved) | The element is a **20 × 40** sticker of negligible thickness. The cable is soldered to the middle of the element and runs along its long side. |
 | **Buttons ×3** (KD TC-0120, The Pi Hut 6 mm slim) | body **6.0 × 3.5 × 3.6**, **4.3** to the top of the knob | Knob 3.1 × 1.7, sticks out 0.7. **Travel 0.25 ± 0.1** (very short). Through-hole legs 3.5 long, 0.3 thick, spaced 6.8–8.0. |
 
-## CURRENT design: `ereader-case.sc` (v7, one gradient + living-hinge cover)
+## CURRENT design: `ereader-case.sc` (v8 = v7 + power-switch slide cap)
+
+v7 is kept as `archive/ereader-case-v7.sc`. **v8 only changes the power switch
+on the top edge:** a retro, PSP-style slide cap that press-fits onto the
+switch knob and rides in a track, hiding the knob slot in both positions.
+Render: `renders/v8-switch-cap.png`. Print files: `print/`.
+
+- **Track:** the old 6 × 3 recess is now a **9.4 × 3.8 stadium, still 0.6
+  deep** (the wall is only 1.2 here, so it can't go deeper). Its top edge
+  stays 0.65 below the front-plate seam. The 3.9 × 1.9 knob slot through
+  the wall is unchanged.
+- **Cap (`SwCap`):** a **7.0 × 3.4 stadium, 1.45 thick**, with a 0.3 chamfer
+  round the face and six 0.5 wide, 0.3 deep grip grooves either side of a
+  plain centre. It clears the track by 0.2 at each end of its 2.0 travel
+  and floats 0.1 off the track floor, so it never rubs. It stands **0.95
+  proud** of the case edge. Darker colour in the model so it reads as a
+  separate part.
+- **Press fit:** a 0.85 deep square socket on the back fits the switch's
+  1.5 square knob. The socket size is a parameter (`sw_sock`, 1.55 in the
+  model). Printed holes come out small, so `print/` has caps at **1.45,
+  1.55 and 1.65**: try them on the real switch and keep the one that grips
+  firmly without splitting. A dot of CA glue is a fine backup.
+- **Printing:** the cap STLs are already laid face-up (back on the bed, so
+  the socket needs no support). Use 0.1 layers if you can, so the grooves
+  come out crisp. `print/switch-track-coupon.stl` is a 20 mm cut of the
+  case's top edge with the switch mount, to test the slide before printing
+  the whole tub.
+- This settles the old "file the knob flush or leave it proud" question:
+  neither, the cap covers it.
+
+## v7 (superseded by v8 only at the power switch)
 
 v6 is kept as `archive/ereader-case-v6.sc`. **v7 changes only the back, the cover's
 first segment and a few mounts:**
@@ -88,9 +118,9 @@ first segment and a few mounts:**
   (38.5, 132.9), clear of the X 35.5 hinge groove. **Caveat:** with the
   cover stowed, the magnet is ~4.4 from the sensor, versus ~2.1 when
   closed. Pick a low-sensitivity sensor or calibrate the threshold.
-- Still open: the menu-key pin (GPIO42 can't wake the device; move it to
-  D17–D19), right-edge retention, the grip pad, test coupons and
-  `layout_generator.py`.
+- Menu key moved to D17/GPIO13 (2026-11-23); the hall sensor takes D18 and
+  VBUS sense D19. Still open: right-edge retention, the grip pad, the
+  remaining test coupons and `layout_generator.py`. See `TODO.md`.
 
 ## v6 (superseded): Oasis profile with a cover seat
 

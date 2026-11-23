@@ -30,7 +30,7 @@ CHROME_FG = "#c8c8cc"
 # Physical buttons (label, logical name, pin note) — see CLAUDE.md pin map.
 BUTTONS = [
     ("◀  Back", "back", "D5 / GPIO6"),
-    ("Menu", "menu", "D11 / GPIO42"),
+    ("Menu", "menu", "D17 / GPIO13"),
     ("Fwd  ▶", "fwd", "D4 / GPIO5"),
 ]
 

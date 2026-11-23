@@ -163,8 +163,8 @@ the EPUB benchmark's step 6 when `/sample.xhtml` is present.
 
 **Goal:** validate the power architecture the whole battery claim rests on.
 
-1. Wire the 3 buttons (fwd GPIO5/D4, back GPIO6/D5, menu GPIO42/D11-castellation)
-   to GND with pullups. GPIO42/D11 needs a wire directly to the XIAO castellation
+1. Wire the 3 buttons (fwd GPIO5/D4, back GPIO6/D5, menu GPIO13/D17-castellation)
+   to GND with pullups. GPIO13/D17 needs a wire directly to the XIAO castellation
    pad — solder it **before** the XIAO is ever seated flat.
 2. Test `ESP_EXT1_WAKEUP_ANY_LOW` across all three, and confirm wake = chip
    reset (CrossPoint's model, and ours).
