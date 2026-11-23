@@ -3,26 +3,21 @@
 **Status:** active work plan, 2026-07-28. Supersedes the generic checklist in
 `ereader-build-guide.md` §2 (written pre-benchmark, pre-CrossPoint decision).
 
-> **KNOWN STALE (2026-07-29) — not yet fully synced with this session's fixes:**
-> Phase 0's "which FPC edge / resolve VBUS-sense" items below are now **answered**
-> (FPC confirmed bottom-exit, layout swapped; VBUS-sense resolved to D2/GPIO3 —
-> both in `CLAUDE.md`), and the board-population philosophy changed a lot (most
-> signals now solder direct-to-XIAO, not through the board — see
-> `hardware/protoboard_build_sheet_generator.py` and `hardware/README.md` for the
-> current model). The hole-budget table below is fixed; the Phase 0 checklist and
-> later wiring-step prose are not — treat `CLAUDE.md` and the generator as the
-> source of truth where they conflict with this doc until a fuller sync pass.
+> **Updated 2026-11-23:** the logic board is gone. Parts are wired straight to
+> the XIAO inside the case, and Phase 5 now describes that. The wire list is
+> `hardware/README.md`. The pin table in `CLAUDE.md` is the source of truth for
+> which pin does what.
 
 What's already settled and must not be re-litigated here: the pin map
 (`CLAUDE.md` §pin assignment) and the pin-conflict resolutions
-(`hardware/README.md` §conflicts — the ProtoMate *layout* is superseded, Phase 5),
+(`hardware/archive/` has the history; `hardware/README.md` is the wire list),
 the firmware base (fork CrossPoint — `docs/crosspoint-adoption-plan.md`), the
 service shape (OPDS library server). Measured numbers live in
 `docs/hardware-spec-sheet.md`; every phase below names the rows it fills.
 
-**Governing principle: nothing gets soldered to the logic board until it has
-worked on flying leads.** It's a direct-solder, Z-height-constrained build with
-~25 hand-routed point-to-point wires — rework on it is expensive. Bench-validate
+**Governing principle: nothing gets soldered into the case until it has
+worked on flying leads.** It's a direct-solder build with about 30 hand-routed
+wires in tight channels, so rework is expensive. Bench-validate
 first, commit second (Phase 5).
 
 ---
@@ -46,32 +41,14 @@ physical part in your hand answers immediately.
 - [ ] **Is the flash module SPI-mode?** Path 1 storage (shared SPI + SdFat)
       assumes SPI. If it's an XTSD, confirm the breakout is wired for SPI, not
       SD/SDIO. *(Open item in the adoption plan §6.)*
-- [ ] **Dry-fit the XIAO on a protoboard and measure its pad row-to-row
-      spacing** with calipers (likely 12.7 mm / 5 pitches). This sets the notch
-      dimensions in Phase 5 — measure before cutting anything, and check whether
-      anything on the XIAO's **underside** protrudes below its PCB (it decides
-      whether the case needs a clearance pocket or a flat boss).
+- [ ] **Check the XIAO's pad positions** against the case's side slots and
+      the pinout card (D17-D19 = GPIO13/12/11), and check nothing on its
+      **underside** stands proud of the PCB where it rests in the cradle.
 - [ ] **Measure the board's R10** (the battery divider's lower leg, 220 kΩ
       expected) in situ before trusting it as half the divider.
-- [ ] **Resolve VBUS-sense.** `hardware/README.md` moves it to "a spare ADC1
-      castellation" — verify that's actually possible: ESP32-S3 **ADC1 is
-      GPIO1–10 only, and ADC2 is unusable while WiFi is up**. The castellations
-      are high-numbered GPIOs, so they are likely ADC2 → not viable as an analog
-      pin. Two clean outs:
-      - **Preferred: make VBUS-sense digital.** You only need *presence*, not a
-        level ("full" is detected by the battery holding ~4.2 V, not by VBUS).
-        A divided 5 V into any spare GPIO as a digital input works and dodges
-        ADC2 entirely.
-      - Or use **D2/GPIO3 (hole I6)** — the one genuinely free ADC1 pin,
-        already broken out. Caveat: it's a strapping pin (JTAG source select);
-        a divided VBUS present at boot pulls it to ~2.5 V. Verify boot behaviour
-        with USB attached before committing.
-      Whichever you pick, record it in `hardware/README.md` and in the new
-      protoboard layout (Phase 5).
-
-> Note: with the plain protoboard (Phase 5) the "not broken out" half of this
-> problem disappears — nothing is pre-routed, so every pin is equally reachable.
-> The **ADC1-vs-ADC2** constraint is a silicon fact and still applies.
+- [x] **VBUS-sense: settled.** It's an on/off input on D19/GPIO11, through a
+      150k / 220k divider from the 5V pad. Check in Phase 3 that it reads high
+      on a few different chargers and low on battery.
 
 **Decision needed (see "Open decisions" below): headers vs. a second XIAO.**
 
@@ -211,233 +188,65 @@ this phase can run.
 
 ---
 
-## Phase 5 — Commit: build the logic board (plain protoboard)
+## Phase 5 - Commit: wire it into the case
 
-**Board decided 2026-07-28: a plain double-sided 2.54 mm through-hole
-prototyping PCB, cut to size — not the ProtoMate.** `hardware/protomate_build.pdf`
-and its generator are **superseded**: that build sheet encodes the ProtoMate's
-continuity (row strips `ABC`/`FGH`, split buses `D`/`E`, Column I = XIAO pads)
-and only 7 jumpers. **A plain protoboard has zero continuity — every hole is an
-isolated plated pad**, so every net is a wire or a deliberate solder bridge, and
-the layout has to be redone. See "Re-layout needed" below.
+**There is no logic board.** Every part is wired straight to the XIAO, and the
+case's channels, slots and tabs hold the wires. The wire-by-wire list is
+`hardware/README.md`; solder from that. (The old protoboard and ProtoMate build
+sheets are in `hardware/archive/`, for reference only.)
 
-### What the change buys, and what it costs
+### Before the iron is hot
 
-Gain (see `CLAUDE.md` §mechanical for the arithmetic): Z drops from ~11 mm to
-**~10.7 mm** with the XIAO on top of a 1.2 mm board, and to **~9.8 mm** with the
-XIAO **in-plane in an edge notch** (DECIDED — see below), at which point the 5 mm
-battery becomes the tallest item. Also: free placement, and the castellation-vs-
-breakout problem evaporates (nothing is pre-routed, so VBAT / ADC_BAT / VBUS_S /
-MENU are just four more point-to-point wires rather than exceptions).
-
-Cost: hand-routing everything, with no pre-printed structure to lean on. The
-laid-out reality (see the generator below): **4 bare-wire buses + 14 insulated
-wires + 4 part bridges + 4 castellation flying wires + 14 XIAO stub legs.**
-Recreating the rails as buses is what keeps the insulated-wire count that low —
-a naive one-wire-per-connection layout would be ~40. Both mitigations are
-non-negotiable: a validated layout before you start, and a meter-verified net
-list before power.
-
-### The XIAO cutout (DECIDED: edge notch, in-plane)
-
-"In-plane" means the XIAO's **own PCB is no longer stacked on top of the
-protoboard** — the protoboard has material removed so the XIAO drops into the
-gap, its underside flush with the protoboard's underside. The two are side by
-side in Z rather than one on the other.
-
-**What it actually saves: exactly the protoboard's thickness** (~1.2–1.6 mm), no
-more. Stacked, the XIAO's 4.7 mm sits on 1.2 mm of FR-4 = 5.9 mm. In-plane, the
-tall item is the XIAO's 4.7 mm alone — and since the battery is 5.0 mm, **the
-battery becomes the constraint and the electronics stop being the limiting
-factor**. That's the real prize: further Z reduction is now a battery-selection
-question, not a layout question.
-
-Two ways to do it:
-
-**A. Interior window** — a closed rectangular hole ≈ XIAO outline + 0.4 mm
-clearance (**≈ 18 × 21.5 mm, i.e. 7 × 8.5 holes**), pads surviving all four
-sides. Sounds tidy, is worse: four internal cuts you can't score-and-snap (needs
-a drill + jeweller's saw or a rotary tool), and the XIAO hangs suspended on its
-own wires with nothing to rest on.
-
-**B. Edge notch — recommended.** A U-shaped bay cut into the board edge, open on
-one side, ≈ **18 mm wide × 21.5 mm deep (7 × 8.5 holes)**. Better on every axis
-that matters here:
-
-- **Two straight cuts**, both score-and-snappable from the edge.
-- The layout already puts the XIAO at the bottom edge with **USB-C facing out of
-  the case** — an open notch lets the connector sit proud of the board outline
-  with no third cut in its way.
-- **The enclosure can support it.** A flat boss or a shelf moulded into the case
-  floor carries the XIAO directly, so the 14 wires are electrical connections,
-  not structure. With variant A they are both, which is how solder joints fail.
-- Easier to align and adjust during dry-fit; easier to rework.
-
-**Mount it in the notch like this:**
-
-1. **Measure the XIAO first.** Its 14 pads are on 2.54 mm pitch, 7 per side; the
-   **row-to-row spacing is likely 12.7 mm (5 pitches) but confirm with calipers**
-   and a dry-fit before cutting. Getting this wrong wastes a board, and you have
-   several — dry-fit is free.
-2. Cut the notch so a **ring of protoboard pads survives along both long edges**
-   of the XIAO, one hole outside each pad row. Those are your landing pads.
-3. **Stub-leg technique:** solder a short length of solid 26 AWG wire vertically
-   into each XIAO hole, bend it 90° outward at board level, and solder the leg
-   into the facing protoboard pad. This gives an adjustable, mechanically sound
-   joint and lets you set the XIAO's Z precisely — shim it so USB-C lines up with
-   the case port before committing the legs.
-4. Do the **four castellation wires (VBAT, ADC_BAT, VBUS_S, MENU) before** the
-   XIAO goes into the notch. Unreachable after.
-5. **Keep the U.FL antenna edge clear** — no wires crossing it, battery foil away
-   from it.
-6. Epoxy or hot-glue fillets at two corners after electrical testing, plus a bead
-   on the USB-C end for strain relief.
-
-> The 4.7 mm figure includes the USB-C connector, which is the tall part. Confirm
-> nothing on the XIAO's **underside** protrudes below its PCB — if it does, it
-> sets how flush you can actually go, and the notch depth needs a clearance
-> pocket in the case floor rather than a flat boss.
-
-### Z discipline (or the saving evaporates)
-
-Back-side wiring is now part of the stack. ~1 mm of wire loom cancels the entire
-gain over the ProtoMate.
-
-- [ ] **30 AWG Kynar (wire-wrap) wire**, laid flat against the board, not looped.
-- [ ] **Trim every lead flush** with flush-cutters — bare protoboard leads stick
-      out ~2–3 mm, more than the whole Z saving.
-- [ ] Decide which face is the enclosure-inside face and keep wiring on it.
-- [ ] Re-measure real assembled Z here and feed it to Phase 8.
-
-### Board size — cut 26 × 17 holes ≈ 66 × 43 mm
-
-Derived from the hole budget, not guessed. **This table is a snapshot (2026-07-29)
-of `protoboard_build_sheet_generator.py`'s own printed summary — don't hand-update
-it when the generator changes; just re-run the script and copy its "Holes used"
-line.** It predates two later decisions that shrank the real number a lot: (1)
-the board-population philosophy (only genuinely SHARED nets touch the board —
-E-paper CS/DC/RST/BUSY, SD MISO/CS, button signals, MENU, and both dividers all
-solder **direct to the XIAO** now, no board hole at all) and (2) settling button
-debounce in **firmware**, not hardware (no RC caps on the board).
-
-| Item | Count | Note |
-|---|---:|---|
-| XIAO header pins with a REAL stub leg into the board | 4 | GND, 3V3, D8/SCK, D10/MOSI only — the shared nets |
-| XIAO header pins, reference position (no board hole) | 10 | D0,D1,D2,D3,D4,D5,D6,D7,D9 + the 5V pad — wire direct to their destination |
-| Castellation/underside flying wires that touch a board hole | 0 | VBAT, ADC_BAT, MENU are all direct-to-XIAO now |
-| Module leads landing on the board (shared-bus consumers only) | 12 | DISP: SCK/MOSI/VCC/PWR/GND (5); SD: SCK/MOSI/VCC/GND (4); 3× button GND legs (3) |
-| Direct-to-XIAO leads (no board hole at all) | 13 | DISP CS/DC/RST/BUSY, SD MISO/CS, 3× button signals, MENU, 5V + D2 (VBUS-sense), VBAT + ADC_BAT (battery divider) |
-| On-board parts | 1 | `C-BULK` only (bridges the GND/3V3 rails directly) |
-| Off-board parts (built inline near the XIAO, not on this board) | 3 | `R-BAT` (fully off-board), `R-VBUS-T`/`R-VBUS-B` (off-board except one GND tap) |
-| Board wires (board hole to board hole) | 5 | GND/3V3 rail feeds, SCK/MOSI fan-out feeds, the VBUS-sense divider's one GND tap |
-| Buses (GND rail, 3V3 rail, SCK + MOSI fan-outs) | 4 | bare-wire, soldered at every hole they pass |
-| **Holes actually used** | **60 (16%)** | of 386 usable — see the generator's own "Holes used" summary line |
-
-**26 × 17 holes = 442 pads**, minus 56 lost to the notch = **386 usable** —
-over 6× the current requirement. That headroom is deliberate: on an
-isolated-pad board, crowding is what causes accidental bridges, and spare pads
-are free. (It's also simply more than needed now that most signals bypass the
-board entirely — the board was originally sized for a much busier population.)
-
-**Why not smaller?** The old `CLAUDE.md` layout allotted the logic board
-~67 × 29 mm, but check the portrait envelope: HAT 30.5 + battery 30 + logic 43
-= 103.5 mm of parts, ~115 mm with gaps, inside 126.38 mm of glass height.
-**There is ~22 mm of vertical slack**, so the 29 mm figure was conservative
-packing, not a constraint. Spending some of it on hand-wiring room is the right
-trade.
-
-**Why not wider than 66 mm?** Drawing it to scale settled this: the board must
-hide under the 71.19 mm glass, so 66 mm leaves ~2.6 mm clearance per side.
-68 mm (27 holes) left only 1.6 mm — too tight to be worth 17 extra pads.
-
-- **Minimum viable** if you'd rather keep the original envelope: 26 × 12 holes
-  ≈ 66 × 30.5 mm (~252 pads less the notch ≈ 189). Workable, tighter routing.
-- **Recommended: 26 × 17 holes ≈ 66 × 43 mm.** Cut from a 7×9 cm or larger stock
-  board.
-- Enclosure drawings are regenerated from these numbers by
-  `enclosure/layout_generator.py` — edit its `PARTS` dict and re-run.
-
-### Cutting the board
-
-- [ ] Score deeply along a hole row both sides with a knife against a steel rule,
-      then snap over a table edge; or cut with a razor saw. **Wear a mask** —
-      FR-4 dust is glass fibre. Deburr with a file.
-- [ ] Cut **before** soldering anything.
-- [ ] The stock corner M2.5 mounting holes are lost when the board is cut down —
-      plan new hole positions (or bond to enclosure bosses) at layout time.
-- [ ] Cut the USB-C end so the connector overhangs flush with the board edge.
+- [ ] Phases 1-4 all passed on flying leads.
+- [ ] The XIAO pinout card agrees with `hardware/README.md` (D17-D19 =
+      GPIO13/12/11), and you know which physical edge carries D0-D6.
+- [ ] Every part dry-fits in a printed case: XIAO in its cradle with USB-C
+      lined up, HAT on its pins, storage board on its pins, battery between its
+      stops, keys in their cradles, power switch in its mount.
+- [ ] Legs trimmed: key switches to 2.4, power switch to 0.5.
 
 ### Solder order
 
-Access is the constraint: anything under the XIAO footprint is unreachable once
-the XIAO is down.
+Access is the constraint: the XIAO's underside can't be reached once it sits
+in its cradle.
 
-1. **Dry-fit first.** Push the XIAO's pads onto the grid and confirm both 7-pin
-   rows land on holes before committing to a layout.
-2. **All four flying wires** (VBAT, ADC_BAT, VBUS_S, MENU) to the XIAO's
-   castellation pads — tin the pad, tin the wire, join. Do these **off-board,
-   before the XIAO goes anywhere**; they are unreachable afterwards.
-3. **Any wire routed under the XIAO footprint**, flush.
-4. **Rails** (GND, 3V3) — see the bus technique below.
-5. **Passives** — the two divider pairs. Reuse the cut-off resistor legs as
-   jumper wire.
-6. **Off-board module leads** (panel HAT, storage, buttons).
-7. **The XIAO last** — it's the heat-sensitive, hardest-to-remove part.
-8. **Strain-relieve** every flying lead and the USB-C end with a bead of hot
-   glue or epoxy after testing. Kapton tape under the FPC/HAT fold.
+1. **XIAO underside first, off the case.** BAT+ and BAT- (bottom centre), and
+   the extra pads you use: D17 (menu), D18 (cover sensor, if fitted), D19 (USB
+   sense). Sleeve each joint and route the wires clear.
+2. **Build the two dividers inline** (resistors soldered together, sleeved in
+   heat-shrink) and attach them to the XIAO.
+3. **Edge pins.** Two wires go into each shared pad (3V3, GND, SCK, MOSI).
+4. **Seat the XIAO**, then run the wires out through the side slots.
+5. **HAT**: the 9 wires to its old PH2.0 pads, along the guide fins.
+6. **Storage board**, then the optional cover sensor (powered from the storage
+   board's pads).
+7. **Keys**: the three signal legs, then one ground wire chained key to key
+   and on to the HAT's GND pad.
+8. **Power switch and battery last**, so nothing is live while you work.
+9. Strain-relieve the USB-C end and the battery wires with a dab of hot glue
+   once everything has been tested.
 
-### Making nets on an isolated-pad board
+### Keep it thin
 
-Four techniques; use each where it fits.
-
-| Technique | Use for | Notes |
-|---|---|---|
-| **Insulated 30 AWG Kynar, point-to-point** | Every signal | Default choice. Low profile, cannot short against neighbours, self-documenting if you colour-code. Strip 2 mm, pre-tin. |
-| **Bare solid tinned copper (0.4–0.6 mm) threaded through a hole row** | GND / 3V3 rails | Best rail method: lay the wire along a row on the component side, solder each pad it passes. Gives you the ProtoMate's D/E buses back, deliberately. |
-| **Solder-bridging adjacent pads** | Short 2–4 hole fan-outs (shared SCK/MOSI) | Tempting but the weak option — solder-only bridges crack, and hairline breaks are near-invisible. Never bridge more than ~4 pads; prefer a bare-wire run. |
-| **Component leads as jumpers** | Divider taps, anything <10 mm | Free, stiff, flat. |
+- 30 AWG Kynar, laid flat in the channels, never looped.
+- Trim every lead flush.
+- Re-measure the assembled depth here and feed it to Phase 8.
 
 ### Iron and consumables
 
-- **Chisel/bevel tip, 1.5–2.4 mm** — not a fine conical. Plated-through holes
-  wick heat; a needle tip gives cold joints.
-- **~350 °C**, leaded 60/40 rosin-core 0.7 mm if you have it (much more forgiving
-  than lead-free here). A **flux pen** on oxidised pads.
-- Heat pad **and** lead together ~1–2 s, then feed solder; these holes drink
-  solder, so feed sparingly or it wicks through and blobs the far side.
-- Keep the tip tinned and wipe often — most "bad protoboard" is a dirty tip.
+- Fine chisel tip (about 1.5 mm), around 350 °C, leaded 0.5-0.7 mm solder if
+  you have it, and a flux pen for the small castellated pads.
+- Tin the pad, tin the wire, join. Heat 1-2 s; the XIAO's pads are small and
+  lift if cooked.
 
-### Verify before power
+### Check before power
 
-- [ ] **Continuity-check every net** against your layout drawing with a meter.
-- [ ] **Then check for shorts**: every rail against every other rail, and
-      adjacent pads along each bridged run. Large pads on 2.54 mm pitch make
-      accidental bridges easy and invisible under flux residue — clean with IPA
-      and inspect under light/magnification.
-- [ ] Confirm GND and 3V3 aren't shorted **before the battery is anywhere near
-      the board**.
-- [ ] Power from USB first, current-limited if you can.
-- [ ] **Re-run Phases 1–3 on the soldered board.** A rewire found now is rework;
-      found after the enclosure it's a rebuild.
-
-### The layout — DONE
-
-`hardware/protoboard_build_sheet_generator.py` → `hardware/protoboard_build.pdf`
-(4 sheets: Front, Back, Wiring lists, Reference). Coordinates are cols A–Z ×
-rows 1–17, holes written hyphenated (`G-14`) so they can't be confused with net
-names like `D10`. Full details in `hardware/README.md`.
-
-**Do not solder from `protomate_build.pdf`** — every hole coordinate in it assumes
-buses this board does not have.
-
-The generator's validator runs on every invocation and covers `offboard`,
-`route`, `crossnet`, `reach`, `short`, `crowd` — all six fault-injection tested.
-The `route` check exists because the first layout ran three wires straight across
-the notch void; the notch means rows 10–17 only exist in cols A–I and Q–Z, so
-cross-board wires must be dressed above row 10.
-
-Before cutting, settle the two open items on Sheet 4: the **XIAO side/direction**
-assumption (`FLIP_SIDE_A/B`) and the **VBUS-sense pin**.
+- [ ] Meter every wire end to end against `hardware/README.md`.
+- [ ] Check 3V3 to GND and BAT+ to GND for shorts **before the battery goes
+      anywhere near it**.
+- [ ] First power from USB with the switch off, then switch on.
+- [ ] **Re-run Phases 1-3 in the case.** A wiring fault found now is rework;
+      found after the front plate is screwed down, it's a rebuild.
 
 ---
 
@@ -480,7 +289,7 @@ Prototype any UI restyling in `simulator/` first — it's pixel-exact.
 
 ## Phase 8 — Enclosure
 
-Oasis-style grip spine, portrait (`enclosure/ereader-case.sc`, v7; see
+Oasis-style grip spine, portrait (`enclosure/ereader-case.sc`, v8; see
 `enclosure/MEASUREMENTS.md`). Check it against the real soldered Z-heights measured in Phase 5.
 PETG, captive top-hat button plungers (~0.3–0.4 mm clearance), buttons on a side
 long edge, battery clear of the antenna foil.
@@ -495,8 +304,8 @@ long edge, battery clear of the antenna foil.
    validated XIAO is real risk. **Recommendation: solder male headers for all
    bench work and buy a second XIAO (~£15) to solder flat for the final build.**
    Cheap insurance, and it keeps a known-good spare.
-2. **VBUS-sense pin** — Phase 0 above; digital-presence detection is the
-   recommendation.
+2. **VBUS-sense pin:** settled. D19/GPIO11 as an on/off input, through a
+   150k / 220k divider (see `hardware/README.md`).
 3. **microSD for dev, flash module for production?** `ereader-build-guide.md`
    §5b suggests developing on removable microSD (books via card reader) and
    switching later. With OPDS download working that matters less, but a
@@ -509,7 +318,3 @@ long edge, battery clear of the antenna foil.
   coarse for iterating on the `0x11`/`0x45` orientation fix (Phase 1).
 - A buttons + deep-sleep-wake test sketch (Phase 3) — the benchmark's
   `BENCH_SLEEP_CYCLES` covers timing but not multi-button ext1 wake.
-- **Protoboard layout + net list** (blocks Phase 5) — either retarget
-  `hardware/protomate_build_sheet_generator.py` to an isolated-pad grid or draw
-  it by hand. Also decide the board cut size, the XIAO-cutout question, and new
-  mounting-hole positions.

@@ -21,7 +21,222 @@ wherever the two differ. All values are in mm.
 | U.FL antenna | cable leaves the **bottom** of the board, **75 long** (can be curved) | The element is a **20 × 40** sticker of negligible thickness. The cable is soldered to the middle of the element and runs along its long side. |
 | **Buttons ×3** (KD TC-0120, The Pi Hut 6 mm slim) | body **6.0 × 3.5 × 3.6**, **4.3** to the top of the knob | Knob 3.1 × 1.7, sticks out 0.7. **Travel 0.25 ± 0.1** (very short). Through-hole legs 3.5 long, 0.3 thick, spaced 6.8–8.0. |
 
-## CURRENT design: `ereader-case.sc` (v8 = v7 + power-switch slide cap)
+## CURRENT design: `ereader-case.sc` (v9 = v8 + firmer mounts, triangle ribs, print fixes)
+
+v8 is kept as `archive/ereader-case-v8.sc`. Renders: `renders/v9-interior.png`, `renders/v9-bumpers.png`.
+
+- **XIAO no longer rattles or gets pushed in by a USB-C plug.** Two end stops
+  sit behind its bottom edge (0.1 gap) and take the push of a plug going in;
+  the top wall already takes the pull coming out. Two small lips (0.2 over the
+  board edge, 0.1 above it) on the right-hand posts snap over the board, to
+  match the front-plate clamp on the left.
+- **HAT right-hand side is now supported.** Before, only the left side was
+  clamped and the right side floated on its pins. Its two floor pins now have
+  Ø4.6 shoulders up to the PCB, and stand 1.0 proud of it. **Fix with a dab of
+  hot glue on each pin top** (peels off for rework), or melt the tip over with
+  a soldering iron for a permanent hold.
+- **Storage board pins** stand 0.9 proud for the same glue dab.
+- **Battery hold-down:** two ribs under the front plate stop 0.15 above the
+  cell. Add a strip of 0.5 foam tape on top of the cell if it still moves.
+- **Bulk capacitor (22uF, 5 × 11) has a home:** lying along the left side of
+  the spine at X 3.8-8.8, Y 69-80, in two printed saddles, next to the HAT's
+  wire pads. Leads at the top end, bent across to the HAT's VCC and GND.
+  Body `REF_BulkCap`. Glue it into the saddles.
+- **Ribbon bay above the adapter:** the grid behind the display now starts at
+  Y 50.5 (was 31) and the channel's right rail starts there too, so there is
+  a clear 22 mm bay across the whole width for the ribbon to leave the
+  adapter and turn into the channel. The two lower magnet posts stand on
+  their own in the bay.
+- **Triangle ribs:** every grid cell behind the display now has an X brace,
+  turning the squares into triangles. Diagonals stiffen the screen side
+  against twisting, which is the main load when the device is held by the
+  spine. The braces run through the upper magnet posts (pockets kept open).
+- **Right-edge retention: hidden hook lip along the whole right edge.** The
+  right wall is now **2.0** (parameter `sh_r`; the other walls stay 1.2), so
+  the case is **92.9 × 136.6** (0.8 wider; the cover grows with it). Along
+  the straight part of the edge (Y 4-132.6) the wall's top has a step on the
+  inside, with a 45° underside so it prints without support either way up, and a notch 0.4 deep and 1.0 tall (Z 6.2-7.2) in its 0.9 outer
+  skin, leaving 0.6 of wall above it. The front plate has a 0.9 tongue
+  (Y 6-130.6, down to Z 6.4) that drops into the step, with a hook 0.6 tall
+  that reaches 0.35 into the notch. Every gap in the joint is at least 0.15
+  (0.2 above and below the hook), so a print that is a layer off still fits. From outside, the seam looks the same as before.
+  - **To fit the front plate:** right edge down first, with the plate about
+    0.4 to the left. Slide it right so the hook enters the notch, swing the
+    spine side down, then fit the spine screws. The screws stop the plate
+    sliding back, which keeps the hook engaged (at least 0.2 even with the
+    screw-hole play).
+  - **To open:** take out the spine screws, lift the spine side, slide the
+    plate left and lift it off.
+  - **Test piece:** `print/hook-coupon-tub.stl` and `print/hook-coupon-front.stl`
+    are a 16 mm slice of the right edge (Y 62-78) from each part, at model
+    coordinates. Print the tub piece rim-down and the front piece face-down,
+    as the full parts will be, and try the slide-and-swing fit.
+- **Print review (2026-11-23).** See "How to print it" in `enclosure/README.md`.
+  Fixes made: hook-joint gaps opened from 0.05 to 0.15-0.2; light-pipe holes
+  Ø1.6 to Ø1.8 (printed holes shrink, so Ø1.6 would grip a Ø1.5 pipe too
+  hard); a flat print version of the cover (`PRINT_CoverFlatFinal`, hidden,
+  parked 15 above the model; `PRINT_CoverFlat` is its working copy, so the
+  two overlap in a clash check) since the stowed shape can't be printed flat.
+  The flat cover has the tapered front edge on the bed side and the hinge
+  grooves on top, as on the real cover.
+- **Steel discs are sealed inside the cover** (no longer open pockets):
+  0.2 of plastic, a 0.3 slot for the 0.3 disc, then 0.2 more. Print at 0.1 layers
+  and pause at **0.5** (after the slot's last layer) to drop the five discs
+  in; the next layers bridge over them. A dab of glue stick in each slot
+  stops a disc sliding while the nozzle passes. The discs now sit 0.2
+  further from the case magnets than before, a small loss of pull.
+- **Chin magnet pair and steel disc moved from X 22.5 to X 25.0.** The
+  disc's pocket overlapped the cover's tapered front edge and broke out
+  through it. It now sits fully on the full-thickness part, and the case
+  magnets keep 0.5 of wall to the S6 screw counterbore.
+- **Cover hall-magnet hole is off by default** (`OPT_HallMagnetHole`
+  suppressed), because the sensor is optional and the through-hole showed on
+  the outside. If you fit the sensor, unsuppress `OPT_CovPrintHallPocket`
+  and re-export the flat cover: a 0.5 deep pocket from the inside face,
+  leaving 0.2 of plastic over the magnet so nothing shows. Print at 0.1 layers.
+- **Foam support behind the display:** the grid, its braces and the magnet
+  posts all stop at Z 6.8, 0.34 below the glass, with 5 × 5 landing pads at
+  the 9 rib crossings and the 4 brace crossings. Stick a square of **0.4
+  very soft closed-cell foam** (Poron-type) on each pad and a ring on each
+  magnet post. 0.4 squashes by about 15%: enough to stop the glass buzzing
+  and spread a squeeze, without pushing the front plate off the right edge.
+  (0.5 foam would squash 32% and push about three times harder.)
+- **XIAO front clamps moved to the board's corners.** The old clamp ran along
+  the left pad row and would have pressed on the solder joints. The new
+  clamps and the right-hand lips sit only on the bare 2 at each end.
+- **Board clamps leave room for foam tape.** The front-plate columns that
+  press on the boards (the two HAT shoulders on its left side and the two
+  XIAO corner clamps) now stop 0.8 above the board instead of touching it.
+  Stick a square of **1 mm foam tape** on each column end (punch a hole for
+  the HAT pin), so the foam, not hard plastic, holds each board. The gap is
+  one setting (`pcb_foam`); change it to suit thinner or thicker tape.
+- **TPU bumpers under the cover.** Nine small TPU plugs (Ø2.5, 0.75 tall,
+  rounded top) push into 0.4 deep sockets on the front frame and stand
+  **0.35 proud**, so the closed cover rests on soft TPU rather than the
+  frame. They sit in the middle of the flat part of each frame strip,
+  about 3.5 from the outer edge: three along the chin and three along the
+  top (X 45, 67.35, 89.7), and five down the right edge, evenly spaced
+  including the two corners. Sockets over the glass edge leave 0.4 of
+  plastic above the glass. None on the left: that frame strip is only 2.2
+  wide beside the window, too narrow for a socket, and the cover's left
+  edge is held by the chin magnet and its own seat. Print
+  `print/tpu-bumpers.stl` in TPU (95A) and add a tiny drop of CA glue in
+  each socket. The cover sits 0.35 further from the magnets (0.55 in all
+  with the sealed discs); test the magnet coupon before the full print.
+- **Key lips thinned for a soft top-out.** Each key's lip (the flange under
+  the front plate) is now 0.4 instead of 0.6, leaving a 0.2 gap above it.
+  Fill that gap with either option, and compare them on the key test piece:
+  - **TPU rings** (`print/tpu-key-rings-0.3.stl` and `-0.4.stl`): one ring
+    per key, sitting on the lip, squeezed 0.1 (0.3 version) or 0.2 (0.4
+    version). They hold each key gently on its switch so it can't rattle,
+    soften the tick as it springs back, and keep dust out. They don't add to
+    the press force. Start with 0.3; use 0.4 only if the key still rattles.
+  - **Foam:** a ring or a few dots of 0.4 soft foam on the lip instead.
+  Neither stops a key tipping when pressed at one end. With one switch per
+  key, the far end of the lip catching on the plate is already the best
+  pivot this layout allows. End stops were looked at and rejected: any stop
+  close enough to help would block the click on an end press.
+- **Key tops have a texture you can tell apart by feel.** Forward has three
+  small chevrons pointing up, back has three pointing down, and menu has a
+  small ring. The grooves are 0.25 deep and 0.6 wide, matching the grip
+  pad's chevrons. Render: `renders/v9-key-texture.png`.
+- **Front plate stiffened where nothing sits below.** The plate is 1.0
+  thicker (2.2 in all) under two strips: along the spine, between the keys
+  and the screen edge above the HAT (X 11.6-19.1, Y 45-127.5), and along the
+  chin between the chin magnet/screw and the far screw (X 33.5-83). Both
+  keep clear of every part, insert hole and magnet pocket; the HAT still has
+  1.8 of clearance above it for wires. Over the screen the plate can't
+  thicken (it is the 0.8 lip on the glass). Thickness is one setting
+  (`stiff_t`). **Print the front plate at 0.1 layers for the first 1 mm** so
+  the face chamfers come out smooth rather than stepped.
+- **Debug shell for test fitting.** `DEBUG_Tub` and `DEBUG_Front` (hidden
+  in the model; `print/debug-tub.stl`, `print/debug-front.stl`) are copies
+  of the shell with 13 viewing windows: four down the spine wall, three in
+  the chin, three in the top and three down the right edge. Each runs from
+  just above the floor to 0.6 into the front plate, so the glass edge shows
+  alongside the parts below it. They avoid the corners, screw bosses,
+  magnets, the power switch and the XIAO. They're copied from the real
+  parts at the end of the timeline, so they pick up later changes.
+  Render: `renders/v9-debug-shell.png`.
+- **Cover now printed in PETG, not PP.** The cover isn't hinged to the
+  case (magnets hold it); its two flex lines only bend about 6° so it can
+  follow the back's curve when stowed. PETG copes with that once the
+  grooves are wider: they are now **3.0 wide** (`hinge_w`, was 1.5) with
+  the same 0.35 web, which halves the bending strain to about 0.6%. The
+  first groove runs X 33-36, shifted toward the spine so it stays clear of
+  the optional hall-magnet pocket at X 38.5; the second is centred on
+  X 50.5. PETG avoids PP's bed-adhesion and warping trouble and matches the
+  rest of the case. It is stiffer, so it springs back a little more; check
+  with `print/coupon-cover-hinge.stl`.
+- **Test pieces** (`print/coupon-*.stl`): the cover flex lines, magnet
+  pull (a block with the real plastic gaps either side of a magnet stack,
+  plus a cover slice with one sealed disc), the key spine section (front
+  and tub halves, held by the upper spine screw), and the light-pipe
+  corner. They are hidden `COUPON_*` bodies in the model, cut from the
+  finished parts at the end of the timeline, so they follow later changes.
+  How to use each one: `enclosure/README.md`, "Test pieces to print first".
+- **Two snap catches hold the top edge.** The top edge had no fastening
+  between the power switch and the right corner. A corner screw like the
+  chin's won't fit: the glass runs to within 1.8 of the top wall inside, so
+  there is no solid front plate to take an insert. Instead, two springy
+  arms (6 wide, 0.8 thick, 4.25 long) hang from the front plate into that
+  gap at X 55 and 80, each with a small catch that clicks 0.3 into a notch
+  in the tub's top wall. The catch has a sloped lead-in, so it snaps in as
+  the plate swings down, and an angled top, so it pulls free again when
+  you open the case (no tool needed). Bending strain is about 2%, within
+  what PETG takes repeatedly. The notches leave 0.85 of wall and are wide
+  enough for the plate's 0.4 slide when the right-edge hook engages.
+  - **Fitting** is unchanged; as the spine side swings down, press along
+    the top edge until both catches click.
+  - **Opening:** after the spine screws are out, lift the spine side
+    firmly; the top catches pop free on their angled faces.
+  - **Test piece:** `print/coupon-snap-tub.stl` + `print/coupon-snap-front.stl`,
+    a 16 mm slice of the top edge around one catch. Press them together
+    and pull apart a dozen times; the arm should click in cleanly, hold,
+    and not whiten.
+  The debug shell has the catches and notches too.
+- **TPU grip pad on the spine.** A 0.55 TPU pad on thin double-sided tape
+  (about 0.15) covers the spine's back from the palm round to where the
+  stowed cover starts. Pad plus tape is 0.7, so it sits **flush with the
+  stowed cover** and the back reads as one flat surface. No recess was cut:
+  the spine's back sits 0.7 above the stowed cover already, and a recess
+  would thin the 1.0 back wall and leave a bridged ceiling when printing
+  back-down. It has a chevron groove pattern (0.2 deep, 3 mm pitch, pointing
+  up the device) for grip. It hides the three spine screws (the chin
+  screw at X 30 stays where it was, uncovered, under the stowed cover). The upper
+  spine screw moved from X 6.5 to X 7.5, in line with the middle one, so its
+  head is fully under the pad too. Peel the pad off to open the case. Print `print/tpu-grip-pad.stl` flat in TPU 95A, grooved
+  face up.
+- **Display support over the HAT.** The grid behind the display starts at
+  X 56, so the glass had no back support over the HAT. A printed bridge
+  (`print/hat-bridge.stl`, PETG) now slips over the two right-hand HAT floor
+  pins once the HAT is in, so it also replaces the glue dabs there. Its bar
+  runs down the HAT on the left of the ZIF connector and the interface
+  switch, with a short arm out to each pin and a small column in the middle
+  standing on the board. Its top is level with the foam lands (0.34 below
+  the glass), so it takes the same 0.4 soft foam. The bar clears the board
+  by 0.6 for the 30 AWG wires that cross it. **Check the column's foot
+  lands on bare board** on your HAT, and trim it if not. Print it upside
+  down (flat top on the bed). The strip between the HAT's edge and the grid
+  (X 42-56) is the ribbon channel and is still unsupported.
+- **Wire routes checked** with stand-in wires against the model; all clear:
+  the left-wall channel, XIAO slots to the channel and to the storage board,
+  the channel to the HAT pads (passing above the capacitor's end), the
+  battery to the channel, the channel to the keys, under the XIAO to its
+  BAT+ pad, and BAT+ over the storage board. Two need a detour:
+  - **XIAO to HAT (right-side pins):** the HAT's top-left clamp blocks the
+    straight line at X 14. Run down at X 18-19, right of the clamp, then
+    across to X 14 at about Y 100 and down beside the guide fins.
+  - **BAT+ from the channel to the XIAO:** the top spine screw post blocks
+    the gap at the left. Leave the channel at about Y 106 (between the
+    forward key and that post), go up beside the post at X 10-11, then
+    across the gap.
+- **Print fixes:** the slide cap's outer grooves left a 0.15 sliver at each
+  end, so it now has four 0.6 grooves (at ±1.4 and ±2.5) with 0.5 lands and a
+  0.7 plain end. The cover's front edge was a 0.2 feather (one layer); it is
+  now 0.4, so the cover starts at X 20.4 (was 19.3).
+
+## v8 (superseded by v9 only where v9 says so)
 
 v7 is kept as `archive/ereader-case-v7.sc`. **v8 only changes the power switch
 on the top edge:** a retro, PSP-style slide cap that press-fits onto the
@@ -115,9 +330,19 @@ first segment and a few mounts:**
   run ~200 mm around the screw bosses, to a **post under the top glass
   border at (38.5, 132.9)**. The sensor sits at Z 5.9–6.9 (0.24 below
   the glass), ~20 mm of wire from the XIAO. Its cover magnet hole moved to
-  (38.5, 132.9), clear of the X 35.5 hinge groove. **Caveat:** with the
-  cover stowed, the magnet is ~4.4 from the sensor, versus ~2.1 when
-  closed. Pick a low-sensitivity sensor or calibrate the threshold.
+  (38.5, 132.9), clear of the X 35.5 hinge groove. With the cover stowed,
+  the magnet is ~4.4 from the sensor, versus ~2.1 when closed.
+- **Hall sensor part (chosen 2026-11-23): TI TMAG5131-Q1, 15 mT version
+  (TMAG5131G1D)**, SOT-23, 1.65-5.5 V, about 1.4 uA average, push-pull output
+  (low when it sees the magnet). It turns on between 12 and 18 mT and off
+  between 6.4 and 10.4 mT. Worked out for the Ø4 × 0.5 cover magnet:
+  **closed it sees ~26-40 mT** (well over 18, so it always triggers) and
+  **stowed ~7-9 mT** (under 12, so it never triggers). The range allows for
+  the sensing element sitting up to 0.6 below the package top. **Buy N35
+  magnets, not N52:** an N52 disc gives ~11 mT stowed, too close to the
+  12 mT trigger. The stronger 37 and 40 mT parts would need a thicker magnet
+  than the 0.7 cover can hold. Check on the real case: the cover stowed must
+  not trigger it.
 - Menu key moved to D17/GPIO13 (2026-11-23); the hall sensor takes D18 and
   VBUS sense D19. Still open: right-edge retention, the grip pad, the
   remaining test coupons and `layout_generator.py`. See `TODO.md`.

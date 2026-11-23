@@ -12,7 +12,7 @@ time in deep sleep.
 | `firmware/` | Firmware benchmarks (EPUB feasibility, WiFi) and the panel driver port. |
 | `service/` | Desktop library server (Python/FastAPI/Docker) that serves books to the reader. |
 | `simulator/` | Pixel-accurate tkinter mock-up of the panel, for building the UI without hardware. |
-| `hardware/` | Protoboard build-sheet generators and PDFs. |
+| `hardware/` | The wiring list for building it, plus the old protoboard build sheets in `archive/`. |
 | `enclosure/` | 3D-printed case: SolidCraft model, measurements, renders. |
 | `TODO.md` | Remaining open items. |
 
