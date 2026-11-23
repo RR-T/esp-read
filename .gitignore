@@ -6,3 +6,10 @@ venv/
 .DS_Store
 .pio/
 build/
+
+# SolidCraft backups / lock files
+*.sc.bak
+.~*.lock
+
+# Local scratch images (SD/flash dumps)
+*.img

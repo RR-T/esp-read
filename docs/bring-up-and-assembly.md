@@ -32,12 +32,17 @@ first, commit second (Phase 5).
 Cheap now, expensive later. All five are open questions in the repo that a
 physical part in your hand answers immediately.
 
-- [ ] **Which panel edge does the FPC exit?** Assumed TOP (feeds the HAT) in
-      `CLAUDE.md` / `enclosure/option-b-layout.png`. If it exits the bottom,
-      swap the HAT and XIAO/USB-C ends of the layout. *(Open item in CLAUDE.md
+- [ ] **Which panel edge does the FPC exit?** **Answered: it exits the BOTTOM**
+      (2026-07-28); the case layout puts the HAT at the bottom and the
+      XIAO/USB-C at the top. *(Open item in CLAUDE.md
       §mechanical.)*
 - [ ] **Confirm panel VCC = 3.3 V** on the HAT (the 5 V pin is dead on battery —
       all peripherals run from VCC_3V3).
+- [ ] **Set the driver HAT's interface switch to `4-line SPI`** (not `3-line SPI`).
+      Our `Epd5in0` driver and the vendor `EPD_5in0` example both use a dedicated
+      DC pin (GPIO2/D1); 3-line/9-bit SPI has no DC line and folds the D/C bit into a
+      9th SPI bit, so it would misread every byte. If the HAT also has a Display
+      Config (A/B) switch, set it per Waveshare's wiki for this 5" panel.
 - [ ] **Is the flash module SPI-mode?** Path 1 storage (shared SPI + SdFat)
       assumes SPI. If it's an XTSD, confirm the breakout is wired for SPI, not
       SD/SDIO. *(Open item in the adoption plan §6.)*
@@ -77,9 +82,22 @@ physical part in your hand answers immediately.
 **Goal:** pixels on glass, and separate "my wiring is wrong" from "our driver
 port is wrong".
 
-1. Wire the HAT's 9 lines to the XIAO per `CLAUDE.md` (CS=GPIO1, DC=GPIO2,
-   RST=GPIO4, BUSY=GPIO43, SCK=GPIO7, DIN=GPIO9, PWR+VCC=3V3, GND). The HAT's
-   dupont cable is the right tool here; do not solder yet.
+1. Wire the HAT's 9 lines to the XIAO per `CLAUDE.md` (GPIO / board-pin label:
+   CS=GPIO1/D0, DC=GPIO2/D1, RST=GPIO4/D3, BUSY=GPIO43/D6, SCK=GPIO7/D8,
+   DIN=GPIO9/D10, **PWR=GPIO3/D2 driven HIGH — NOT tied to 3V3**, VCC=3V3, GND).
+   The HAT's dupont cable is the right tool here; do not solder yet.
+   > **Panel protection (do this from the very first bring-up).** The panel's HV
+   > source drivers must not sit energised — *"prolonged exposure to high voltage
+   > can damage the film"* (irreparable). Sequence: `refresh → sleep(0x10) the
+   > instant BUSY clears → wait ≥2s → PWR low`. The ≥2s is the HV-rail discharge
+   > wait *before cutting power*; there is **no** minimum delay between refresh and
+   > sleep, and the real risk is leaving the panel active/idle (do SD/WiFi work
+   > with it asleep). Waveshare's own `EPD_5in0` example already does this
+   > (`Sleep()` then `DEV_Module_Exit()`); our `firmware/epub-benchmark` mirrors
+   > it at the end of `setup()`. This is why PWR is a GPIO (D2), not hardwired.
+   > On idle/low-battery/storage shutdown, `clearWhite()` **before** sleeping so no
+   > stale static image is left on the bistable panel (Waveshare: *"store it with a
+   > white image"*) — sequence `clearWhite → sleep(0x10) → ≥2s → PWR low`.
 2. **Flash Waveshare's own `EPD_5in0` ESP32-S3 example first**, unmodified apart
    from pins. This is the reference oracle — if it renders, wiring is good.
 3. Then flash `firmware/epub-benchmark/` and compare. It times panel init, full
@@ -107,10 +125,26 @@ remaining hardware risk in the project.
 **Goal:** prove the shared-SPI discipline that CrossPoint does *not* implement,
 before inheriting responsibility for it.
 
-1. Add the storage module to the same bus (MISO=GPIO8, CS=GPIO44).
-2. Enforce the rules from `CLAUDE.md`: both CS as outputs driven **HIGH** before
-   any init; **SD initialised first**; bus clock at the SD's tolerated speed;
-   never start an SD transfer while BUSY is asserted.
+> **What's actually "shared":** SCK=GPIO7/D8 and MOSI=GPIO9/D10 are the common
+> bus lines — they were already wired in Phase 1 (the panel drives them), so the
+> SD reuses them rather than adding new pins. That's why the wiring step below
+> only lists two pins. Each device keeps its **own** CS (panel EPD-CS=GPIO1/D0,
+> SD-CS=GPIO44/D7), and MISO=GPIO8/D9 is SD-only (the panel is write-only, no
+> MISO). Sharing SCK/MOSI is exactly what the discipline below exists to police.
+
+1. Add the storage module to the same bus — it adds only its **two own** signal
+   pins: MISO=GPIO8/D9 and SD-CS=GPIO44/D7. (SCK=GPIO7/D8 and MOSI=GPIO9/D10 are
+   already present from Phase 1.)
+   > **Power the module from its `3V3` pin, NOT `VIN`.** Dual-input SD breakouts
+   > route `VIN` (5V) through an onboard regulator + level shifter (for 5V-logic
+   > boards); `3V3` feeds the card directly. Two reasons to use 3V3: (a) the 5V
+   > rail is **dead on battery**, so a VIN-powered SD would fail off-USB; (b) the
+   > XIAO is 3.3V logic, so the direct path avoids the level shifter — a shifter in
+   > the MISO return is a classic "card won't init / CMD0 fail" cause. Leave VIN
+   > (and CD/card-detect) unconnected.
+2. Enforce the rules from `CLAUDE.md`: both CS (EPD-CS=GPIO1/D0, SD-CS=GPIO44/D7)
+   as outputs driven **HIGH** before any init; **SD initialised first**; bus clock
+   at the SD's tolerated speed; never start an SD transfer while BUSY is asserted.
 3. Test SD **and** panel in one sketch, alternating — the "one device works, not
    both" bug class shows up only when both are live.
 4. Enable SdFat's **`USE_SD_CRC`** now (integrity layer 1 from the adoption plan
@@ -129,9 +163,9 @@ the EPUB benchmark's step 6 when `/sample.xhtml` is present.
 
 **Goal:** validate the power architecture the whole battery claim rests on.
 
-1. Wire the 3 buttons (fwd GPIO5, back GPIO6, menu GPIO42-castellation) to GND
-   with pullups. GPIO42 needs a wire directly to the XIAO castellation pad —
-   solder it **before** the XIAO is ever seated flat.
+1. Wire the 3 buttons (fwd GPIO5/D4, back GPIO6/D5, menu GPIO42/D11-castellation)
+   to GND with pullups. GPIO42/D11 needs a wire directly to the XIAO castellation
+   pad — solder it **before** the XIAO is ever seated flat.
 2. Test `ESP_EXT1_WAKEUP_ANY_LOW` across all three, and confirm wake = chip
    reset (CrossPoint's model, and ours).
 3. Build the epub-benchmark with `-DBENCH_SLEEP_CYCLES=N` to get real
@@ -159,7 +193,8 @@ Start this **early and in parallel** — the discharge curve is wall-clock-bound
 1. Connect the **protected** LiPo (polarity!). Confirm USB-C charging and
    battery-only operation.
 2. Build the divider: on-board upper 220 kΩ (`R-BAT`), board R10 as the lower
-   leg (value confirmed in Phase 0), tap → GPIO10 via a castellation flying wire.
+   leg (value confirmed in Phase 0), tap → GPIO10 (`ADC_BAT`, pin 20 — a dedicated
+   pad, not a D-labelled header pin) via a castellation flying wire.
 3. One-point calibrate against a multimeter; average 50–100 samples with
    `esp_adc_cal` eFuse calibration.
 4. Run the characterisation: log **calibrated voltages, not raw ADC counts**
@@ -445,8 +480,8 @@ Prototype any UI restyling in `simulator/` first — it's pixel-exact.
 
 ## Phase 8 — Enclosure
 
-Wedge back, portrait, "option B" (`enclosure/option-b-layout.png`). Gated on
-Phase 0's FPC-edge answer and on the real soldered Z-height measured in Phase 5.
+Oasis-style grip spine, portrait (`enclosure/ereader-case.sc`, v7; see
+`enclosure/MEASUREMENTS.md`). Check it against the real soldered Z-heights measured in Phase 5.
 PETG, captive top-hat button plungers (~0.3–0.4 mm clearance), buttons on a side
 long edge, battery clear of the antenna foil.
 

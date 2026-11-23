@@ -144,6 +144,9 @@ void Epd5in0::displayPartialFull(const uint8_t *image, bool invert) {
 }
 
 void Epd5in0::sleep() {
-  cmd(0x10);  // deep sleep mode
+  cmd(0x10);  // deep sleep mode — powers down the internal booster (HV rails)
   data(0x01);
+  delay(100);  // vendor EPD_5in0_Sleep() settle delay. Call this the instant a
+               // refresh completes; if gating PWR, wait >=2s AFTER this before
+               // cutting power (HV-rail discharge).
 }

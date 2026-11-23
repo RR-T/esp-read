@@ -59,6 +59,8 @@ static const int EPD_DC = 2;     // D1
 static const int EPD_RST = 4;    // D3
 static const int EPD_BUSY = 43;  // D6
 static const int SD_CS = 44;     // D7
+static const int EPD_PWR = 3;    // D2/GPIO3 — panel PWR enable. Drive it; do NOT
+                                 // tie to 3V3. HIGH=powered, LOW=off (see Sleep note).
 
 SPIClass spiBus(HSPI);
 Epd5in0 epd(spiBus, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY);
@@ -218,6 +220,8 @@ static void benchInflate() {
 // --------------------------------------------------------------------------
 static bool initBus() {
   rule("Bus & peripherals");
+  pinMode(EPD_PWR, OUTPUT);
+  digitalWrite(EPD_PWR, HIGH);  // power the panel before init (Waveshare: PWR high)
   pinMode(EPD_CS, OUTPUT);
   pinMode(SD_CS, OUTPUT);
   digitalWrite(EPD_CS, HIGH);  // both CS deselected before any bus traffic
@@ -514,10 +518,18 @@ void setup() {
   benchInflate();
 #endif
   initBus();
+  // Panel protection: sleep the panel between bench stages so the film is never
+  // left energised across the whole run. Waking needs a reset after 0x10, so
+  // epd.begin() re-inits before the next stage draws. PWR stays HIGH across the
+  // run (sleep already drops the HV rails); it's cut once at the very end.
   benchRefresh();
+  if (panelOk) { epd.sleep(); epd.begin(); }
   benchRender();
+  if (panelOk) { epd.sleep(); epd.begin(); }
   benchImages();
+  if (panelOk) { epd.sleep(); epd.begin(); }
   benchEpub();
+  if (panelOk) epd.sleep();
 
   rule("Done");
   // Recap the numbers that gate the CrossPoint feasibility call, so they're
@@ -535,6 +547,20 @@ void setup() {
   Serial.println("   - page render should be well under a few hundred ms");
   Serial.println("   - pagination time x pages = cold-open cost; if large, cache it to flash");
   Serial.println("   - watch 'min internal free' — fragmentation, not PSRAM, is the usual limit");
+
+  // Panel shutdown (lifecycle). Clear to WHITE so the panel isn't left holding a
+  // stale static image during idle/storage — e-paper is bistable, so whatever is
+  // on screen persists with power off (Waveshare: "store it with a white image").
+  // Then deep-sleep the controller, wait >=2s for the HV rails to discharge, and
+  // cut PWR (0-power). The real reader does the same on low-battery/idle/storage
+  // shutdown. (Waveshare EPD_5in0: Sleep() -> >=2s -> DEV_Module_Exit().)
+  if (panelOk) {
+    epd.begin();        // wake from the between-stage deep sleep (needs a reset)
+    epd.clearWhite();   // leave the panel WHITE, not the last EPUB page
+    epd.sleep();
+    delay(2000);        // HV-rail discharge before removing power
+  }
+  digitalWrite(EPD_PWR, LOW);
 
 #if BENCH_SLEEP_CYCLES > 0
   Serial.printf("\nStarting deep-sleep wake-latency loop (%d cycles, 2s each)...\n",

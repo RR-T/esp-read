@@ -82,10 +82,16 @@ which is why `WAYPOINTS` now dresses them around above row 10.
   5V/GND/3V3+D10–D7 on the other, in silked top→bottom order. Still to dry-fit:
   which physical cut edge is "A" vs "B". Measure the row-to-row spacing (expect
   12.7 mm), check against the silk, then flip `FLIP_SIDE_A/B` if mirrored.
-- **VBUS-sense / E-paper RST conflict: RESOLVED.** VBUS-sense now taps
-  `D2`/GPIO3 (hole `I-13`) instead of sharing `D3`/GPIO4 with the panel RST.
-  D2 is ADC1 (GPIO1–10 only — ADC2 is dead once WiFi is up) but is also a
-  strapping pin — verify boot behaviour is unaffected during bring-up.
+- **E-paper PWR must be a controlled GPIO → it takes `D2`/GPIO3; VBUS-sense moves
+  to a castellation.** The panel's PWR line has to be driven (not tied to 3V3) so
+  firmware can power the panel down after every refresh — *"prolonged exposure to
+  high voltage can damage the film"* (irreparable). PWR now takes **`D2`/GPIO3**
+  (the free header pin, easy to bench-test). **VBUS-sense therefore moves off D2
+  to a spare Plus castellation as a digital-presence input** — only USB-present is
+  needed, so no ADC pin (which also dodges the ADC2-while-WiFi limit). E-paper RST
+  still owns `D3`/GPIO4. D2 is a strapping pin — verify boot behaviour during
+  bring-up. Power-down sequence: `refresh → sleep(0x10) the instant BUSY clears →
+  wait ≥2s → PWR low`. **This layout needs regenerating for PWR→D2 / VBUS→castellation.**
 - **Board R10 value** — confirm before trusting it as the battery divider's lower leg.
 
 ---
