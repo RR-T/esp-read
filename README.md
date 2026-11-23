@@ -14,5 +14,6 @@ time in deep sleep.
 | `simulator/` | Pixel-accurate tkinter mock-up of the panel, for building the UI without hardware. |
 | `hardware/` | Protoboard build-sheet generators and PDFs. |
 | `enclosure/` | 3D-printed case: SolidCraft model, measurements, renders. |
+| `TODO.md` | Remaining open items. |
 
 The reader only handles DRM-free books.
