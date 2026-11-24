@@ -303,6 +303,13 @@ class Model:
                         if o == 'join':
                             ops.append((op, g))
         if not found:
+            # A cut that splits a body into pieces names the extra pieces
+            # "X (1)", "X (2)", ... Draw each piece as the whole of the body it
+            # came from; joined back together they cover the same ground.
+            for f in self.features:
+                if (f['type'] == 'combine' and body in (f.get('body_names') or [])
+                        and f.get('target') and f['target'] != body):
+                    return self.body_ops(f['target'], _depth + 1)
             raise ModelError(f'the model has no body named {body!r}; the drawings need it')
         return ops
 

@@ -8,7 +8,7 @@ It's modelled in SolidCraft. Printed in PETG, with a few small TPU parts.
 |---|---|
 | `ereader-case.sc` | **The current model (v9: firmer board mounts, triangle ribs behind the display, print fixes).** It holds separate bodies (tub, front plate, keys, cover, light pipes) and coloured `REF_*` reference parts. |
 | `MEASUREMENTS.md` | Measured part sizes and every design decision. **Read this first.** |
-| `SOLIDCRAFT-NOTES.md` | How to drive SolidCraft through its MCP server efficiently, and the traps to avoid. |
+| `SOLIDCRAFT-NOTES.md` | SolidCraft setup on this machine and how the model is organised. The general workflow is in the `solidcraft-guide` Claude Code skill. |
 | `print/` | Print-ready parts: the power-switch slide caps (three socket sizes to find the best press fit), a test coupon of the switch edge, a test slice of the right-edge hook joint, the cover laid flat for printing, the keys, the TPU cover bumpers, spine grip pad and key rings, and the support bridge that sits over the HAT. |
 | `renders/` | Renders of the current model. |
 | `drawings/` | `layout_generator.py` and its 2D PNGs (front, back, cross-sections). It reads every number from `ereader-case.sc`, so re-run it after changing the model. |
@@ -23,7 +23,7 @@ and the cover (a pause to drop in the steel discs).
 |---|---|---|---|---|
 | Tub | PETG | **Back down** | Build plate only | Only the spine's back touches the bed. The display section's back sits 1.5 higher and needs a flat support under it, plus the shallow slope between them and the bottom of the palm round. That surface is hidden by the stowed cover. Everything inside (ribs, posts, pins, walls) then grows straight up and needs nothing. |
 | Front plate | PETG | Face down | None | Flat front face on the bed. **Use 0.1 layers for the first 1 mm** so the 45° face chamfers come out smooth. The six small lips on the key cradles overhang 1.5; they print with a little droop, which doesn't matter there. |
-| Keys (3) | PETG | `print/keys.stl`, flange down | None | The lip is 0.4 (two 0.2 layers). The grooves on top (0.4 deep) print best at 0.1 layers for the last 0.4. |
+| Keys (3) | PETG | `print/keys.stl`, flange down | None | The lip is 0.4 (two 0.2 layers). The icons are raised 0.4: use 0.1 layers for the last 0.6 and turn on ironing for the key tops. For extra contrast, swap filament colour at the icons' first layer (0.4 below the top). |
 | Key rings (3) | TPU 95A | `print/tpu-key-rings-0.3.stl` (or `-0.4`), flat | None | Optional; compare against foam on the key test print. Slip one over each key onto its lip before fitting the front plate. |
 | Cover | PETG | `print/cover-flat.stl`, smooth face down | None | Print the flat version, not the stowed shape. **0.1 layers, and pause at 0.5 mm** to drop the five steel discs into their sealed slots (four Ø8, one Ø5 at the spine end). |
 | Slide cap | PETG | Face down, stem up (as exported) | None | 0.1 layers. Use a smooth bed side for the face. |

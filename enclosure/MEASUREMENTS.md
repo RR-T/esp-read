@@ -146,6 +146,28 @@ v8 is kept as `archive/ereader-case-v8.sc`. Renders: `renders/v9-interior.png`, 
   away (each 2.8 × 4.4, about 1.0 stroke, 0.4 deep; was three thin
   chevrons pointing up/down the spine). Menu has a single round dimple
   (Ø2.2, 0.4 deep) instead of a ring.
+  **Since raised instead of cut in (2026-11-24),** for sharper prints with
+  a 0.4 nozzle: cut-in icons split the 4.5-wide key top into thin strips
+  and their 1.0 lines were only about two nozzle passes, so corners and
+  tips filled in. Now the key top is 0.4 lower (`icon_h`) and the icons
+  stand 0.4 proud on it, finishing at the old top height. The flat top
+  prints as one clean surface and each icon prints last as its own
+  outline. The ">" / "<" keep their 2.8 × 4.4 size and 72° point, with a
+  **0.9 line** (exactly two 0.45 passes) and a 0.7 flat on the tip so the
+  nozzle doesn't blob it. Menu keeps its full-height top and the cut-in
+  Ø2.2 dimple (0.4 deep), so it reads as different. Solid under the flat top is unchanged (1.05 above the knob-pocket
+  bridge). Print with 0.1 layers for the last 0.6 and ironing on the key
+  tops; optionally swap filament colour at the icons' first layer.
+- **Glass pocket corner reliefs (2026-11-24).** The front plate's glass
+  pocket (0.2 clearance each side, gripping the top 0.5 of the 1.06 glass)
+  locates the panel to within 0.2, which the window's 0.25 margin covers.
+  A 0.4 nozzle can't print its square inside corners, so each corner now
+  has a Ø1.0 round relief (Z 7.85-8.2, under the lip, not visible). The
+  glass corners sit in clear space and only the straight walls locate it,
+  so the glass drops in flat and its corners take no load. Also cut into
+  `DEBUG_Front` and the two test pieces that include a pocket corner.
+  Re-exported: `debug-front.stl`, `coupon-seam-corner-front.stl`,
+  `coupon-light-pipe.stl`.
 - **HAT brace is solid full height and wider:** the bar now stands on the
   board all the way along (Z 5.05–6.8, was a 1.2 bar floating 0.6 above
   it) and is 5 wide (X 31–36, was 33–36), widened to the left only so it
