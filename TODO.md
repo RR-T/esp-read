@@ -41,7 +41,7 @@ not already tracked there.
       production firmware exists yet, so nothing else to change.
 - [ ] Confirm D17-D19 = GPIO13/12/11 against the pinout card that comes
       with the XIAO before soldering.
-- [ ] At assembly: trim the key-switch legs to 2.4 and the power-switch legs
+- [ ] At assembly: trim the key-switch legs to 1.9 and the power-switch legs
       to 0.5. The battery+ route goes through the power switch (see
       `enclosure/MEASUREMENTS.md` §v7 additions).
 

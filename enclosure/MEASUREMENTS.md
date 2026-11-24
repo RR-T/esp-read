@@ -25,6 +25,138 @@ wherever the two differ. All values are in mm.
 
 v8 is kept as `archive/ereader-case-v8.sc`. Renders: `renders/v9-interior.png`, `renders/v9-bumpers.png`.
 
+### Fixes from the third test prints (2026-11-24)
+- **Slide cap now has a stem through the wall.** With the socket only in
+  the cap, it held 1.2 of the switch's 2.0 long knob, which wasn't enough
+  to stay on. The cap now has a square stem (`SwCapStem`, socket +
+  2 × `stem_t` 0.6, so 3.05 square with the 1.85 socket) that passes
+  through the wall and stops 0.15 (`stem_gap`) short of the switch body.
+  The socket runs the full stem, so it grips **1.85 of the knob** (all
+  but 0.15 of it; the knob can't give more).
+  - **Knob slot widened** to 5.55 × 3.55 (`slot_h` 3.55 + 2.0 travel)
+    with 0.6 round corners (`slot_r`), which leaves 0.2 round the
+    largest (1.95-socket) stem. Its roof is a 5.55 bridge in the
+    back-down tub print.
+  - **Cap is bigger to keep the slot hidden** at both ends of the travel:
+    **9.4 × 4.8** (was 7.0 × 3.8), still 1.85 thick and 0.95 proud. The
+    track recess grows with it to 11.8 × 5.2 (X 21.85–33.65).
+  - **Power switch 0.5 lower** (body Z 2.8–6.3, `sw_cz` 4.55) so the
+    taller cap and track keep their top edge at Z 6.95 / 7.15, clear of
+    the seam reveal. Pad, back lip, spacers and pins moved with it; the
+    clamp is 1.55 tall (Z 6.3–7.85) and 0.6 narrower so it misses the
+    wall pad.
+  - **Wall pad** behind the track is now X 21.7–34.0, Z 1.0–6.85, so the
+    longer track still has 0.7 of wall behind it.
+  - **Print the cap face down** (as exported): the face on the bed, the
+    stem growing up, so the socket is a plain vertical hole. Same three
+    socket sizes, **1.75 / 1.85 / 1.95**.
+  - Re-exported: the three `switch-cap-socket-*.stl`, `switch-cap.step`,
+    `switch-track-coupon.stl`, `debug-tub.stl`, `debug-front.stl`.
+    Collision check clean with the cap at both ends of its travel (known
+    USB-C artifact only).
+
+### Fixes from the second test prints (2026-11-23)
+- **Key icons sagged over the knob pocket.** The pocket ceiling is a 2.1
+  bridge directly under each icon. The three key switches and their
+  pedestals are now another 0.2 lower (pedestal top Z 3.45, rails top
+  4.45) and the pocket is 0.2 shallower (`knob_d` 0.45, ceiling Z 8.25),
+  so the 0.5 of play is unchanged but there is now 1.05 of solid between
+  the bridge and the icon floor (was 0.85). **Trim the key-switch legs
+  to 1.9** (was 2.2): longer legs would now hit the 1.7 floor.
+- **Slide cap socket can go bigger.** The cap is 0.4 taller (`cap_h` 3.8,
+  was 3.4) so a larger socket still leaves about 0.9 of wall each side.
+  To keep the cap's top edge (and the track recess) the same distance
+  below the front-plate seam, the power switch moved **0.2 down**
+  (body Z 3.3–6.8, knob centre `sw_cz` 5.05) and the cap grows 0.4
+  downward (recess Z 2.95–7.15). The pad under the switch, knob slot,
+  wall pad, spacers and clamp all moved with it (the clamp is 0.2 thicker
+  to keep reaching the switch top). New caps: **1.75, 1.85, 1.95**
+  sockets (1.85 in the model); the old 1.45–1.65 files are removed.
+  Re-exported: `keys.stl`, the three `switch-cap-socket-*.stl`,
+  `switch-cap.step`, `switch-track-coupon.stl`, `coupon-key-tub.stl`,
+  `debug-tub.stl`. Collision check clean (known USB-C artifact and key
+  ring squeeze only).
+- **Seam between front plate and tub: shadow-line reveal plus a
+  registration lip** (the flush butt joint showed every 0.1 of mismatch).
+  - **Reveal:** a 0.4 × 45° chamfer on the tub rim's outer edge
+    (`SeamRevealTub`) and 0.2 on the front plate's lower outer edge
+    (`SeamRevealFront`) make a small V-groove all round at Z 7.8. Offsets
+    hide in its shadow. The front plate's outer flat was only 0.4 tall
+    (between this and the 0.8 face chamfer), hence the uneven split. The
+    switch-cap recess (top Z 7.15) is clear of it. The USB-C slot's top
+    (Z 7.55) dips 0.15 into the groove's lower face, which is hardly visible.
+  - **Lip:** a 0.8 wide, 0.8 tall lip under the front plate (Z 7.0–7.8),
+    0.15 inside the tub's inner wall face, along the left, top and bottom
+    edges (`SeamLip*` features, joined into `Front` before the debug and
+    coupon copies). It keeps the long edges from sitting in or out
+    mid-span. It stops at X 84.9 on the right, where the hook tongue
+    already locates the plate. Gaps: over the XIAO's USB-C receptacle
+    (X 7.5–18), around the bottom-left cover magnet (X 23.5–26.5) and at
+    the two snap arms (X 51–59, 76–86) so their roots still flex. No other
+    part sits in that band (collision check clean against the tub and
+    every REF part). The lip prints upward on the face-down front plate,
+    no supports.
+  - Re-exported: `debug-tub.stl`, `debug-front.stl`,
+    `coupon-key-front.stl`, `coupon-key-tub.stl`, `coupon-light-pipe.stl`,
+    `coupon-snap-tub.stl`, `coupon-snap-front.stl`, `hook-coupon-tub.stl`,
+    `hook-coupon-front.stl`.
+  - **Test piece:** `print/coupon-seam-corner-tub.stl` and
+    `-front.stl` (bodies `COUPON_SeamTub` / `COUPON_SeamFront`, hidden) are
+    the bottom-left corner (X 0-20, Y 0-20) of each part, full depth, at
+    model coordinates. They include the real corner screw (insert boss in
+    the front, clearance hole and counterbore in the tub), so one M2.5
+    screw and insert hold them together. Print them the same way up as
+    the full parts.
+
+### Fixes from the first test prints (2026-11-23)
+- **Power-switch pocket 0.3 deeper.** The switch's back (the leg side,
+  facing into the case) was too tight. The back lip `SwBack` moved 0.3 into
+  the case (now Y 130.5–131.0) and the end stops lengthened to match, so the
+  pocket is 3.9 for the 3.6 body. The switch itself didn't move, so the knob
+  still lines up with the slot. **At assembly, push the switch against the
+  wall and put a small dab of glue between its body and the pad**, so the
+  extra room doesn't let it move.
+- **Slide cap grips 1.2 of the knob (was 0.8).** The cap is 0.4 thicker
+  (`cap_t` 1.85) with a 1.25 deep socket (`sock_d`); its face stays where
+  it was (0.95 proud), so the extra 0.4 goes into the case: the track floor
+  is now 0.4 deeper (`rec_y` 135.6). To keep the wall solid behind the
+  deeper track, a 0.6 pad (`SwWallPad`) fills the gap between the switch's
+  front face and the top wall (Y 134.9–135.5, around the knob slot), so
+  0.7 of wall is left behind the track. The switch, knob slot and clamp are
+  unchanged. The cap prints face-up as before (now 1.85 tall).
+- **Slide cap grooves simplified for printing:** two 1.0 wide, 0.35 deep
+  grooves at ±2.0 (was four 0.6 grooves), leaving a 3.0 plain centre and a
+  1.0 land at each end.
+- **Storage board moved 0.6 down in all** (board Y 112.4–130.1, pins at
+  Y 114.4), leaving 0.7 between it and the power switch's leg tips for the
+  soldering iron and wires. It's still 1.4 clear of the HAT's top end, so
+  the HAT didn't need to move, and the antenna cable still fits in that gap.
+- **Keys: 0.5 of free play above each switch (was 0.1).** The keys pressed
+  their switches as soon as the case closed. The key's knob pocket is 0.2
+  deeper (`knob_d` 0.65), and the three switch pedestals are 0.2 lower
+  (top at Z 3.65), so the switch knob tops sit at Z 7.95 against a pocket
+  ceiling at 8.45. The TPU ring or foam on the key lip holds the key up
+  across that play. **Trim the key-switch legs to 2.2** (was 2.4).
+- **Keys stay put when the case is open.** Each pedestal now has two side
+  rails (0.8 wide, 4 long, 1.0 above the pedestal top) that hold the switch
+  body with 0.1 clearance each side. The legs leave from the ends, clear of
+  the rails. Add a small dab of glue under each switch for a firm hold.
+- **Key-top icons simplified and made to read as forward/back:** forward
+  has one bold ">" pointing toward the screen, back has one "<" pointing
+  away (each 2.8 × 4.4, about 1.0 stroke, 0.4 deep; was three thin
+  chevrons pointing up/down the spine). Menu has a single round dimple
+  (Ø2.2, 0.4 deep) instead of a ring.
+- **HAT brace is solid full height and wider:** the bar now stands on the
+  board all the way along (Z 5.05–6.8, was a 1.2 bar floating 0.6 above
+  it) and is 5 wide (X 31–36, was 33–36), widened to the left only so it
+  still clears the ZIF connector and interface switch. Wires can no longer
+  pass under it: route any that cross the HAT around its ends (about 2 of
+  board is free beyond each end). `print/hat-bridge.stl` re-exported.
+- Collision check is clean (apart from the known USB-C block artifact and
+  the key rings' intended 0.1 squeeze). Re-exported: `keys.stl`, the three
+  `switch-cap-socket-*.stl`, `switch-cap.step`, `switch-track-coupon.stl`,
+  `coupon-key-tub.stl`, `debug-tub.stl`. The front plate didn't change.
+
 - **XIAO no longer rattles or gets pushed in by a USB-C plug.** Two end stops
   sit behind its bottom edge (0.1 gap) and take the push of a plug going in;
   the top wall already takes the pull coming out. Two small lips (0.2 over the

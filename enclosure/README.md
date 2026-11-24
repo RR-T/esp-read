@@ -23,10 +23,10 @@ and the cover (a pause to drop in the steel discs).
 |---|---|---|---|---|
 | Tub | PETG | **Back down** | Build plate only | Only the spine's back touches the bed. The display section's back sits 1.5 higher and needs a flat support under it, plus the shallow slope between them and the bottom of the palm round. That surface is hidden by the stowed cover. Everything inside (ribs, posts, pins, walls) then grows straight up and needs nothing. |
 | Front plate | PETG | Face down | None | Flat front face on the bed. **Use 0.1 layers for the first 1 mm** so the 45° face chamfers come out smooth. The six small lips on the key cradles overhang 1.5; they print with a little droop, which doesn't matter there. |
-| Keys (3) | PETG | `print/keys.stl`, flange down | None | The lip is 0.4 (two 0.2 layers). The grooves on top print best at 0.1 layers for the last 0.3. |
+| Keys (3) | PETG | `print/keys.stl`, flange down | None | The lip is 0.4 (two 0.2 layers). The grooves on top (0.4 deep) print best at 0.1 layers for the last 0.4. |
 | Key rings (3) | TPU 95A | `print/tpu-key-rings-0.3.stl` (or `-0.4`), flat | None | Optional; compare against foam on the key test print. Slip one over each key onto its lip before fitting the front plate. |
 | Cover | PETG | `print/cover-flat.stl`, smooth face down | None | Print the flat version, not the stowed shape. **0.1 layers, and pause at 0.5 mm** to drop the five steel discs into their sealed slots (four Ø8, one Ø5 at the spine end). |
-| Slide cap | PETG | Face up (as exported) | None | 0.1 layers. |
+| Slide cap | PETG | Face down, stem up (as exported) | None | 0.1 layers. Use a smooth bed side for the face. |
 | Debug shell (optional) | PETG | `print/debug-tub.stl` and `debug-front.stl`, same way up as the real tub and front plate | Same as the real parts | A test-fit copy of the shell with viewing windows in all four walls, cut across the join between tub and front plate, so you can see how the boards, battery, keys and XIAO sit against the display. The real `Tub` and `Front` are unchanged. The front plate is only 0.6 thick over each window, so handle it gently. |
 | Cover bumpers (9) | TPU 95A | `print/tpu-bumpers.stl`, flat end down | None | Slow (about 20 mm/s), 0.1 layers. Print a few spares; they're tiny. Push into the front frame with a drop of CA glue. |
 | Spine grip pad | TPU 95A | `print/tpu-grip-pad.stl`, flat, grooved face up | None | Stick on with thin double-sided tape; peel off to reach the spine screws. |
@@ -60,10 +60,11 @@ orientation and settings as the full part they come from):
 | Magnet pull | `coupon-magnet-block.stl` + `coupon-cover-disc.stl` | The block has the same plastic either side of a magnet stack as the real case: 2.55 on the top face (the gap to the closed cover, glass and bumpers included) and 1.1 on the bottom (the gap to the stowed cover). **Pause at 4.6 mm** to drop in a Ø6 × 2 and a Ø6 × 1.5 magnet. The disc piece is a slice of the cover with one sealed Ø8 steel disc (pause at 0.5 mm). Hold the disc piece on each face of the block to feel the closed and stowed pull. |
 | Keys | `coupon-key-front.stl` + `coupon-key-tub.stl` + `keys.stl` | The spine around the back and forward keys, with the upper spine screw to hold the two halves together. Fit two switches and keys, then try the TPU rings against foam. |
 | Light pipes | `coupon-light-pipe.stl` | The top corner of the front plate with both light-pipe holes, for the 1.5 mm acrylic rod's press fit. |
+| Seam corner | `coupon-seam-corner-tub.stl` + `coupon-seam-corner-front.stl` | The bottom-left 20 × 20 corner of both parts: the reveal groove, both legs of the registration lip and the rounded corner. Fit an M2.5 insert in the front piece's boss and join them with the real corner screw; the lip locates them. Check the lip slides in without force and the groove looks even all round. |
 | Right-edge hook | `hook-coupon-tub.stl` + `hook-coupon-front.stl` | The slide-and-swing fit of the right edge. |
 | Top-edge snap catch | `coupon-snap-tub.stl` + `coupon-snap-front.stl` | One of the two catches on the top edge. Press together and pull apart a dozen times: it should click in, hold, and come apart again without whitening. |
 | Power switch | `switch-track-coupon.stl` + the three `switch-cap-socket` sizes | The slide cap's grip and travel. |
-| Slide cap on switch knob | 1.45 / 1.55 / 1.65 | Try all three. |
+| Slide cap on switch knob | 1.75 / 1.85 / 1.95 | Try all three. |
 | TPU bumpers | Ø2.5 sockets, Ø2.5 plugs | Snug, since printed holes come out a little small. Glue them in. |
 | Board clamps | 0.8 gap above each board | Filled by 1 mm foam tape on each clamp end. |
 | HAT bridge on the HAT pins | Ø2.9 over the Ø2.6 pins | Free fit; add a dab of glue on each pin. |

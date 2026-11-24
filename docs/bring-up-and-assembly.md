@@ -203,7 +203,7 @@ sheets are in `hardware/archive/`, for reference only.)
 - [ ] Every part dry-fits in a printed case: XIAO in its cradle with USB-C
       lined up, HAT on its pins, storage board on its pins, battery between its
       stops, keys in their cradles, power switch in its mount.
-- [ ] Legs trimmed: key switches to 2.4, power switch to 0.5.
+- [ ] Legs trimmed: key switches to 1.9, power switch to 0.5.
 
 ### Solder order
 
