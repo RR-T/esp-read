@@ -21,7 +21,7 @@ and the cover (a pause to drop in the steel discs).
 
 | Part | Material | Orientation | Supports | Notes |
 |---|---|---|---|---|
-| Tub | PETG | **Back down** | Build plate only | Only the spine's back touches the bed. The display section's back sits 1.5 higher and needs a flat support under it, plus the shallow slope between them and the bottom of the palm round. That surface is hidden by the stowed cover. Everything inside (ribs, posts, pins, walls) then grows straight up and needs nothing. |
+| Tub | PETG | **Back down** | Build plate only | Only the spine's back touches the bed. The display section's back sits 1.5 higher and needs a flat support under it, plus the shallow slope between them and the bottom of the palm round. That surface is hidden by the stowed cover. The whole outside of the tub and front plate is printed 0.3 thicker than final (`sand_t`): wet-sand every outside face back about 0.3 and polish. Keep out of the seam groove. Everything inside (ribs, posts, pins, walls) then grows straight up and needs nothing. |
 | Front plate | PETG | Face down | None | Flat front face on the bed. **Use 0.1 layers for the first 1 mm** so the 45° face chamfers come out smooth. The six small lips on the key cradles overhang 1.5; they print with a little droop, which doesn't matter there. |
 | Keys (3) | PETG | `print/keys.stl`, flange down | None | The lip is 0.4 (two 0.2 layers). The icons are raised 0.4: use 0.1 layers for the last 0.6 and turn on ironing for the key tops. For extra contrast, swap filament colour at the icons' first layer (0.4 below the top). |
 | Key rings (3) | TPU 95A | `print/tpu-key-rings-0.3.stl` (or `-0.4`), flat | None | Optional; compare against foam on the key test print. Slip one over each key onto its lip before fitting the front plate. |
@@ -51,6 +51,14 @@ support inside the rib cells, which is very hard to get out.
 | Key caps in their holes | 0.3 each side | Free sliding fit. |
 | Right-edge hook joint | 0.15-0.2 gaps | Print the `hook-coupon` pair first. |
 
+**File revisions:** every file in `print/` ends in `-rN` (for example
+`coupon-key-tub-r2.stl`). N goes up by one each time that file is
+re-exported with a change, and only the newest revision is kept (older
+ones are in git). The tables here use the names without the suffix. To
+check whether you've printed the latest, compare the name in your slicer
+project with the one in `print/`. Anything you printed before 2026-11-24
+has no suffix, so treat it as older than every `-rN` file.
+
 **Test pieces to print first** (all in `print/`, at model positions, same
 orientation and settings as the full part they come from):
 
@@ -61,6 +69,7 @@ orientation and settings as the full part they come from):
 | Keys | `coupon-key-front.stl` + `coupon-key-tub.stl` + `keys.stl` | The spine around the back and forward keys, with the upper spine screw to hold the two halves together. Fit two switches and keys, then try the TPU rings against foam. |
 | Light pipes | `coupon-light-pipe.stl` | The top corner of the front plate with both light-pipe holes, for the 1.5 mm acrylic rod's press fit. |
 | Seam corner | `coupon-seam-corner-tub.stl` + `coupon-seam-corner-front.stl` | The bottom-left 20 × 20 corner of both parts: the reveal groove, both legs of the registration lip and the rounded corner. Fit an M2.5 insert in the front piece's boss and join them with the real corner screw; the lip locates them. Check the lip slides in without force and the groove looks even all round. |
+| Tub back | `coupon-tub-back.stl` | A 60 × 25 strip of the tub floor across the spine (Y 28–53, Z up to 4): spine back on the bed, the slope, and the display-section back 1.5 above the bed. Print back-down with supports from the build plate only, to tune the support settings for the supported face. Print three copies with contact gaps of 0.15, 0.2 and 0.25 to compare. |
 | Right-edge hook | `hook-coupon-tub.stl` + `hook-coupon-front.stl` | The slide-and-swing fit of the right edge. |
 | Top-edge snap catch | `coupon-snap-tub.stl` + `coupon-snap-front.stl` | One of the two catches on the top edge. Press together and pull apart a dozen times: it should click in, hold, and come apart again without whitening. |
 | Power switch | `switch-track-coupon.stl` + the three `switch-cap-socket` sizes | The slide cap's grip and travel. |

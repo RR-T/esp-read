@@ -22,7 +22,7 @@ not already tracked there.
       glue dab, battery hold-down ribs.
 - [x] Soft support behind the display: 0.4 soft foam squares on printed
       landing pads (v9).
-- [ ] Re-export `print/switch-track-coupon.stl` if the top edge changes again
+- [ ] Re-export `print/switch-track-coupon-rN.stl` if the top edge changes again
       (v9 didn't touch the switch mount).
 - [ ] Check the XIAO pin and castellation positions, and the storage
       board's pad end, against the real boards. The wire slots are

@@ -55,6 +55,78 @@ v8 is kept as `archive/ereader-case-v8.sc`. Renders: `renders/v9-interior.png`, 
     Collision check clean with the cap at both ends of its travel (known
     USB-C artifact only).
 
+- **Switch refinements after the stem cap fitted (2026-11-24).**
+  - **Switch 0.3 further into the case** (body Y 131.0–134.6, knob face
+    at Y 134.6), so less of the knob needs trimming. The wall pad and
+    spacer ribs it rests against are 0.3 thicker (front face Y 134.6),
+    the back lip, end stops, pad and clamp moved back with it, and the
+    cap's stem is 0.3 longer so it still stops 0.15 short of the switch
+    body.
+  - **Storage board 0.3 down** (Y 112.1–129.8, pins at Y 114.1) to keep
+    its 0.4 gap to the switch's end stops. It is now 1.1 above the HAT.
+  - **Knob slot and track recess 0.3 to the right** (`sw_off`), because
+    the real switch travels less to the left than to the right. The cap
+    is still centred on the knob; its travel is now X −0.7 / +1.3 from
+    `sw_cx`, which still clears both ends of the track. Wall pad is
+    X 21.7–34.3.
+  - Re-exported: `switch-cap-socket-*-r2.stl`, `switch-cap-r4.step`,
+    `switch-track-coupon-r3.stl`, `debug-tub-r3.stl`,
+    `debug-front-r4.stl`. Collision check clean (known USB-C artifact
+    only), with the cap at both ends of its travel.
+
+- **Sanding allowance on the whole outside (2026-11-24).** Every outside
+  face of the tub and front plate is printed **0.3 thicker** (`sand_t`)
+  so the whole exterior can be wet-sanded and polished back to size: the
+  back (spine and display section), the four walls, the plan-view corner
+  rounds, the front face and its 45° chamfer. The printed case is
+  93.5 × 137.2 and 0.6 thicker until sanded.
+  - **How it's built:** an offset copy of each part's plain outer shape
+    (`SkinTub*` / `SkinFront*` features, the tub's profile sketch
+    redrawn 0.3 out with radii +0.3 / −0.3, and a 0.3-bigger plate with
+    the chamfer widened to keep its 45° face) minus the original shape.
+    Openings are carved back through it by shifting the part's own
+    openings 0.3 outward, so the USB-C slot, switch slot and track, key
+    holes, LED and reset holes, window, screw holes and counterbores
+    all still go through at their original sizes and depths (checked
+    with probe rays). Recess floors (switch track, bumper pockets) are
+    0.3 deeper until sanded.
+  - **Not thickened:** the seam reveal chamfers (the skin stops at the
+    groove: tub below Z 7.4, front above Z 8.0), so the groove is kept;
+    sand the walls up to it. Inside faces and mating faces are unchanged.
+  - Until it's sanded, the keys stand 0.4 proud instead of 0.7, the
+    stowed and closed cover sit 0.3 off, and the TPU grip pad sits on
+    0.3 of extra spine back. The replaced back-only `SandSkin*` layer is
+    gone.
+- **HAT left side now held from below (2026-11-24).** The left HAT
+  holes had only the front plate's pins through them and nothing under
+  the board. They now match the right side: a tub floor pin (Ø2.6, to
+  Z 6.0) with a Ø4.6 shoulder to Z 3.3 (`HatFloorPinL*`,
+  `HatShoulderL*`). The front plate's left pins are removed; its two
+  left HAT shoulders get a Ø3.0 × 0.65 socket for the pin tips. **Punch
+  a hole in the foam pads on those shoulders.**
+- **Truss under the HAT's left edge.** A Warren truss in the tub floor
+  between the two left HAT pins (`HatTruss*`): chords at X 12.6 and
+  19.2, end ties through both shoulders, eight 0.8-wide diagonals,
+  1.1 tall (top Z 2.8, 0.5 under the HAT board). It stays 1.6 clear of
+  the HAT's underside chips at X 20.8.
+- **Front plate ribs where hands press (`FrRib*`).** 0.8 wide ribs
+  hanging 0.6 under the plate (Z 7.2–7.8): a collar round the back and
+  forward key pocket and one round the menu key pocket, ties from each
+  collar to the inner lip and to the HAT shoulders, a cross rib through
+  the middle spine screw boss, one over the battery at Y 10, and a
+  spine rib at X 3.95 from the bottom corner to the keys. All clear the
+  battery (top 7.0), key switches, bulk cap and HAT.
+- Also fixed: the power switch clamp (moved with the switch) overlapped
+  the glass edge by 0.1; it now starts at Y 133.6 (0.9 wide).
+- Re-exported every file cut from the tub or front plate:
+  `debug-tub-r5`, `debug-front-r5`, `coupon-key-front-r3`,
+  `coupon-key-tub-r3`, `coupon-light-pipe-r4`, `coupon-snap-tub-r4`,
+  `coupon-snap-front-r3`, `coupon-seam-corner-tub-r2`,
+  `coupon-seam-corner-front-r3`, `hook-coupon-tub-r3`,
+  `hook-coupon-front-r3`, `switch-track-coupon-r4`,
+  `coupon-tub-back-r3`. Collision check clean (known USB-C artifact
+  only; the skin against the stowed cover and grip pad is expected).
+
 ### Fixes from the second test prints (2026-11-23)
 - **Key icons sagged over the knob pocket.** The pocket ceiling is a 2.1
   bridge directly under each icon. The three key switches and their

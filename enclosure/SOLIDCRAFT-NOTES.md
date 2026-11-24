@@ -31,3 +31,18 @@ SolidCraft work. This file keeps only what is specific to this machine and this 
   then caps, covers and `REF_*` parts, then mounts.
 - `parameters.list` returns about 240 KB on this model; use `timeline.inspect`
   on the likely features to find what uses a parameter.
+
+## Lessons from the sanding-skin round (0.47.0)
+- `solid.offset_face` and `solid.shell` (outside) are refused on the tub
+  even at its simple 15-face stage ("no certified bound" where the plan
+  rounds meet the sloped back). Build the offset shape from primitives
+  instead (redraw the profile sketch 0.3 out, a 0.3-bigger rounded box),
+  subtract the original, and carve openings back by cutting the skin with
+  copies of (envelope − finished part) shifted 0.3 outward along each axis.
+- `envelope − part` can split into many pieces (one per hole); join the
+  pieces into one body before shifting, or the small holes get covered.
+- `solid.box {centred:true}` doesn't centre on all axes the way it looks;
+  give explicit corners and rotate with `solid.move {axis, angle, origin}`.
+- A ~600-feature timeline replays seconds per edit near the start; the
+  app's memory grows with every undo step and checkpoint. Restarting the
+  app frees it.
