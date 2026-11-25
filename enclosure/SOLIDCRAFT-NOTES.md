@@ -46,3 +46,11 @@ SolidCraft work. This file keeps only what is specific to this machine and this 
 - A ~600-feature timeline replays seconds per edit near the start; the
   app's memory grows with every undo step and checkpoint. Restarting the
   app frees it.
+- Keep test pieces and debug copies out of the model: `tools/export_prints.py`
+  builds, exports and deletes them in one batch. A model can be compacted with
+  `timeline.export_script` → `new_design` → `batch {path}`; the script leaves out
+  colours (re-apply with `appearance.assign`), and picks stored as edge names
+  (`F377:side|F377:top`) can go stale: re-set those features with
+  `edges` points and `edge_names: []`. Check every body's volume afterwards.
+- STL exports differ slightly from run to run (tessellation and the file name
+  in the header), so compare print files by volume, area and bounding box.

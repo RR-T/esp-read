@@ -74,7 +74,7 @@ v8 is kept as `archive/ereader-case-v8.sc`. Renders: `renders/v9-interior.png`, 
     `debug-front-r4.stl`. Collision check clean (known USB-C artifact
     only), with the cap at both ends of its travel.
 
-- **Sanding allowance on the whole outside (2026-11-24).** Every outside
+- **Sanding allowance on the whole outside (2026-11-24).** Re-exported again after the seam fix: `debug-*-r6`, `coupon-key-*-r4`, `coupon-light-pipe-r5`, `coupon-seam-corner-tub-r3`, `coupon-seam-corner-front-r4`, `coupon-snap-tub-r5`, `coupon-snap-front-r4`, `hook-coupon-*-r4`, `switch-track-coupon-r5`. Every outside
   face of the tub and front plate is printed **0.3 thicker** (`sand_t`)
   so the whole exterior can be wet-sanded and polished back to size: the
   back (spine and display section), the four walls, the plan-view corner
@@ -90,9 +90,12 @@ v8 is kept as `archive/ereader-case-v8.sc`. Renders: `renders/v9-interior.png`, 
     all still go through at their original sizes and depths (checked
     with probe rays). Recess floors (switch track, bumper pockets) are
     0.3 deeper until sanded.
-  - **Not thickened:** the seam reveal chamfers (the skin stops at the
-    groove: tub below Z 7.4, front above Z 8.0), so the groove is kept;
-    sand the walls up to it. Inside faces and mating faces are unchanged.
+  - **Seam groove:** the extra layer is bevelled on the same 45° plane as
+    each half of the groove (`SkinTubSeamChamfer`, 0.4 + `sand_t`, and
+    `SkinFrontSeamChamfer`, 0.2 + `sand_t`), so before sanding the groove is
+    one continuous bevel, 0.3 bigger, and sanding the walls back 0.3
+    leaves exactly the designed groove. Don't sand into the groove itself.
+    Inside faces and mating faces are unchanged.
   - Until it's sanded, the keys stand 0.4 proud instead of 0.7, the
     stowed and closed cover sit 0.3 off, and the TPU grip pad sits on
     0.3 of extra spine back. The replaced back-only `SandSkin*` layer is
@@ -126,6 +129,13 @@ v8 is kept as `archive/ereader-case-v8.sc`. Renders: `renders/v9-interior.png`, 
   `hook-coupon-front-r3`, `switch-track-coupon-r4`,
   `coupon-tub-back-r3`. Collision check clean (known USB-C artifact
   only; the skin against the stowed cover and grip pad is expected).
+
+- **Clean rebuild (2026-11-24, model name `case-v9`).** The model was
+  replayed into a fresh document from its own timeline, without the hidden
+  debug shells and test-piece copies (51 features). 533 features, full
+  rebuild 34 s (was 584 and 41.5 s), and the app starts small again. All 30
+  bodies and all 27 print files were checked identical to before. The test
+  pieces now come from `tools/export_prints.py` (see `README.md`).
 
 ### Fixes from the second test prints (2026-11-23)
 - **Key icons sagged over the knob pocket.** The pocket ceiling is a 2.1

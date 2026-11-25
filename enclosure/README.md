@@ -51,6 +51,14 @@ support inside the rib cells, which is very hard to get out.
 | Key caps in their holes | 0.3 each side | Free sliding fit. |
 | Right-edge hook joint | 0.15-0.2 gaps | Print the `hook-coupon` pair first. |
 
+**Making the print files:** the debug shells and test pieces are not kept in
+the model. `tools/export_prints.py` describes them and exports every print
+file from the live model: run `python3 tools/export_prints.py batch`, run the
+written `.rebuild/export-batch.json` through the SolidCraft MCP `batch` tool,
+then `python3 tools/export_prints.py sync`. Sync compares each new file with
+the current one by shape (volume, area, bounding box) and only bumps the
+revision of files that really changed.
+
 **File revisions:** every file in `print/` ends in `-rN` (for example
 `coupon-key-tub-r2.stl`). N goes up by one each time that file is
 re-exported with a change, and only the newest revision is kept (older

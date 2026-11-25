@@ -13,3 +13,4 @@ build/
 
 # Local scratch images (SD/flash dumps)
 *.img
+enclosure/.rebuild/
